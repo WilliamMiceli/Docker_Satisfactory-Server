@@ -1,4 +1,4 @@
-[![Build Status](https://drone.williammiceli.systems/api/badges/William/Docker-SatisfactoryServer/status.svg)](https://drone.williammiceli.systems/William/Docker-SatisfactoryServer)
+[![Build Status](https://drone.williammiceli.systems/api/badges/William/Docker_Satisfactory-Server/status.svg)](https://drone.williammiceli.systems/William/Docker_Satisfactory-Server)
 
 # Useful References
 
