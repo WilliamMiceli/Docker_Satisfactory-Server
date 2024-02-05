@@ -8,31 +8,63 @@ trigger:
   event:
   - push
 
-steps:
-- name: build-push-gitea
-  image: plugins/docker
-  settings:
-    username:
-      from_secret: GITEA_USERNAME
-    password:
-      from_secret: GITEA_TOKEN
-    registry: https://git.williammiceli.systems
-    repo: git.williammiceli.systems/william/docker_satisfactory-server
-    tags:
-    - latest
-    - build${DRONE_BUILD_NUMBER}
-    - ${DRONE_COMMIT_SHA:0:7}
+services:
+- name: docker
+  image: docker.io/library/25.0.2-dind-alpine3.19
+  privileged: true
+  volumes:
+  - name: dockersock
+    path: /var/run
 
-- name: build-push-dockerhub
-  image: plugins/docker
-  settings:
-    username:
+steps:
+
+- name: build
+  image: docker.io/library/25.0.2-dind-alpine3.19
+  commands:
+  - sleep 10 # give docker enough time to initialize
+  - docker image build -t image:latest .
+  volumes:
+  - name: dockersock
+    path: /var/run
+
+- name: push-gitea
+  image: docker.io/library/25.0.2-dind-alpine3.19
+  commands:
+  - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
+  - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:latest
+  - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:build${DRONE_BUILD_NUMBER}
+  - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:sha${DRONE_COMMIT_SHA:0:12}
+  - docker image push --all-tags git.williammiceli.systems/william/docker_satisfactory-server
+  depends_on:
+    - build
+  environment:
+    GITEA_USERNAME:
+      from_secret: GITEA_USERNAME
+    GITEA_TOKEN:
+      from_secret: GITEA_TOKEN
+  volumes:
+  - name: dockersock
+    path: /var/run
+
+- name: push-dockerhub
+  image: docker.io/library/25.0.2-dind-alpine3.19
+  commands:
+  - echo $DOCKER_TOKEN | docker login docker.io --username $DOCKER_USERNAME --password-stdin
+  - docker image tag image:latest docker.io/williammiceli/satisfactory-server:latest
+  - docker image tag image:latest docker.io/williammiceli/satisfactory-server:build${DRONE_BUILD_NUMBER}
+  - docker image tag image:latest docker.io/williammiceli/satisfactory-server:sha${DRONE_COMMIT_SHA:0:12}
+  - docker image push --all-tags docker.io/williammiceli/satisfactory-server:latest
+  depends_on:
+    - build
+  environment:
+    DOCKER_USERNAME:
       from_secret: DOCKER_USERNAME
-    password:
+    DOCKER_TOKEN:
       from_secret: DOCKER_TOKEN
-    registry: https://docker.io/
-    repo: williammiceli/satisfactory-server
-    tags:
-    - latest
-    - build${DRONE_BUILD_NUMBER}
-    - ${DRONE_COMMIT_SHA:0:7}
+  volumes:
+  - name: dockersock
+    path: /var/run
+
+volumes:
+- name: dockersock
+  temp: {}
