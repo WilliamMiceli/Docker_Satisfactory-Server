@@ -1,0 +1,57 @@
+kind: pipeline
+type: kubernetes
+name: default
+
+trigger:
+  event:
+  - push
+
+steps:
+- name: build-docker-image
+  image: docker.io/library/docker:25.02-dind-alpine3.19
+  commands:
+  - docker build \
+    -t william/satisfactory-server:latest \
+    -t william/satisfactory-server:${DRONE_BUILD_NUMBER} \
+    -t william/satisfactory-server:${DRONE_COMMIT_SHA:0:7} \
+    ./
+    # -t williammiceli/satisfactory-server:latest \
+    # -t williammiceli/satisfactory-server:${DRONE_BUILD_NUMBER} \
+    # -t williammiceli/satisfactory-server:${DRONE_COMMIT_SHA:0:7} \
+  volumes:
+  - name: artifacts
+    path: /
+
+- name: gitea-push
+  image: docker.io/library/docker:25.02-dind-alpine3.19
+  commands:
+  - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
+  - docker push git.williammiceli.systems/william/satisfactory-server:latest
+  - docker push git.williammiceli.systems/william/satisfactory-server:${DRONE_BUILD_NUMBER}
+  - docker push git.williammiceli.systems/william/satisfactory-server:${DRONE_COMMIT_SHA:0:7}
+  environment:
+    GITEA_USERNAME:
+      from_secret: GITEA_USERNAME
+    GITEA_TOKEN:
+      from_secret: GITEA_TOKEN
+  volumes:
+  - name: artifacts
+    path: /
+
+# - name: docker-hub-push
+#   image: docker.io/library/docker:25.02-dind-alpine3.19
+#   commands:
+#   - echo $DOCKER_TOKEN | docker login --username $DOCKER_USERNAME --password-stdin
+#   - docker push williammiceli/satisfactory-server:latest
+#   environment:
+#     DOCKER_USERNAME:
+#       from_secret: DOCKER_USERNAME
+#     DOCKER_TOKEN:
+#       from_secret: DOCKER_TOKEN
+#   volumes:
+#   - name: artifacts
+#     path: /
+
+volumes:
+- name: artifacts
+  temp: {}
