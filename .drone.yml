@@ -11,7 +11,6 @@ trigger:
 steps:
 - name: build-docker-image
   image: docker.io/library/docker:25.02-dind-alpine3.19
-  privileged: true
   commands:
   - docker build \
     -t william/satisfactory-server:latest \
@@ -27,7 +26,6 @@ steps:
 
 - name: gitea-push
   image: docker.io/library/docker:25.02-dind-alpine3.19
-  privileged: true
   commands:
   - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
   - docker push git.williammiceli.systems/william/satisfactory-server:latest
@@ -44,7 +42,6 @@ steps:
 
 # - name: docker-hub-push
 #   image: docker.io/library/docker:25.02-dind-alpine3.19
-#   privileged: true
 #   commands:
 #   - echo $DOCKER_TOKEN | docker login --username $DOCKER_USERNAME --password-stdin
 #   - docker push williammiceli/satisfactory-server:latest
