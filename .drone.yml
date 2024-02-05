@@ -9,36 +9,38 @@ trigger:
   - push
 
 steps:
-- name: build-docker-image
-  image: docker.io/library/docker:25.02-dind-alpine3.19
-  commands:
-  - docker build \
-    -t william/satisfactory-server:latest \
-    -t william/satisfactory-server:${DRONE_BUILD_NUMBER} \
-    -t william/satisfactory-server:${DRONE_COMMIT_SHA:0:7} \
-    ./
-    # -t williammiceli/satisfactory-server:latest \
-    # -t williammiceli/satisfactory-server:${DRONE_BUILD_NUMBER} \
-    # -t williammiceli/satisfactory-server:${DRONE_COMMIT_SHA:0:7} \
-  volumes:
-  - name: artifacts
-    path: /
+# - name: build-docker-image
+#   image: docker.io/library/docker:25.02-dind-alpine3.19
+#   commands:
+#   - docker build \
+#     -t william/satisfactory-server:latest \
+#     -t william/satisfactory-server:${DRONE_BUILD_NUMBER} \
+#     -t william/satisfactory-server:${DRONE_COMMIT_SHA:0:7} \
+#     ./
+#     # -t williammiceli/satisfactory-server:latest \
+#     # -t williammiceli/satisfactory-server:${DRONE_BUILD_NUMBER} \
+#     # -t williammiceli/satisfactory-server:${DRONE_COMMIT_SHA:0:7} \
+#   volumes:
+#   - name: artifacts
+#     path: /
 
-- name: gitea-push
-  image: docker.io/library/docker:25.02-dind-alpine3.19
-  commands:
-  - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
-  - docker push git.williammiceli.systems/william/satisfactory-server:latest
-  - docker push git.williammiceli.systems/william/satisfactory-server:${DRONE_BUILD_NUMBER}
-  - docker push git.williammiceli.systems/william/satisfactory-server:${DRONE_COMMIT_SHA:0:7}
-  environment:
-    GITEA_USERNAME:
+- name: gitea-build-push
+  image: plugins/docker
+  settings:
+    username:
       from_secret: GITEA_USERNAME
-    GITEA_TOKEN:
+    password:
       from_secret: GITEA_TOKEN
-  volumes:
-  - name: artifacts
-    path: /
+    registry: https://git.williammiceli.systems
+    repo: git.williammiceli.systems/william/satisfactory-server
+    tags:
+    - latest
+    - build${DRONE_BUILD_NUMBER}
+    - ${DRONE_COMMIT_SHA:0:7}
+    platform: linux/amd64
+  # volumes:
+  # - name: artifacts
+  #   path: /
 
 # - name: docker-hub-push
 #   image: docker.io/library/docker:25.02-dind-alpine3.19
@@ -54,6 +56,6 @@ steps:
 #   - name: artifacts
 #     path: /
 
-volumes:
-- name: artifacts
-  temp: {}
+# volumes:
+# - name: artifacts
+#   temp: {}
