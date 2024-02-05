@@ -10,7 +10,7 @@ trigger:
 
 services:
 - name: docker
-  image: docker.io/library/25.0.2-dind-alpine3.19
+  image: docker.io/library/docker:25.0.2-dind-alpine3.19
   privileged: true
   volumes:
   - name: dockersock
@@ -19,7 +19,7 @@ services:
 steps:
 
 - name: build
-  image: docker.io/library/25.0.2-dind-alpine3.19
+  image: docker.io/library/docker:25.0.2-dind-alpine3.19
   commands:
   - sleep 10 # give docker enough time to initialize
   - docker image build -t image:latest .
@@ -28,7 +28,7 @@ steps:
     path: /var/run
 
 - name: push-gitea
-  image: docker.io/library/25.0.2-dind-alpine3.19
+  image: docker.io/library/docker:25.0.2-dind-alpine3.19
   commands:
   - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:latest
@@ -47,7 +47,7 @@ steps:
     path: /var/run
 
 - name: push-dockerhub
-  image: docker.io/library/25.0.2-dind-alpine3.19
+  image: docker.io/library/docker:25.0.2-dind-alpine3.19
   commands:
   - echo $DOCKER_TOKEN | docker login docker.io --username $DOCKER_USERNAME --password-stdin
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:latest
