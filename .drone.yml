@@ -53,7 +53,7 @@ steps:
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:latest
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:build${DRONE_BUILD_NUMBER}
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:sha${DRONE_COMMIT_SHA:0:12}
-  - docker image push --all-tags docker.io/williammiceli/satisfactory-server:latest
+  - docker image push --all-tags docker.io/williammiceli/satisfactory-server
   depends_on:
     - build
   environment:
