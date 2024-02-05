@@ -3,6 +3,8 @@ type: kubernetes
 name: default
 
 trigger:
+  branch:
+  - main
   event:
   - push
 
