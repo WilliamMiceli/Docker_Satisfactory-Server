@@ -17,12 +17,13 @@ steps:
     password:
       from_secret: GITEA_TOKEN
     registry: https://git.williammiceli.systems
-    repo: William/Satisfactory-Server
+    repo: william/docker_satisfactory-server
     tags:
     - latest
     - build${DRONE_BUILD_NUMBER}
     - ${DRONE_COMMIT_SHA:0:7}
-    depends_on: {}
+    depends_on:
+    - clone
 
 - name: build-push-dockerhub
   image: plugins/docker
@@ -37,4 +38,5 @@ steps:
     - latest
     - build${DRONE_BUILD_NUMBER}
     - ${DRONE_COMMIT_SHA:0:7}
-    depends_on: {}
+    depends_on:
+    - clone
