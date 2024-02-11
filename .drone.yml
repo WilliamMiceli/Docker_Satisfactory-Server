@@ -19,10 +19,10 @@ services:
 steps:
 
 - name: get-app-version
-  image: cm2network/steamcmd:latest
+  image: steamcmd/steamcmd:alpine-3
   commands:
   - |
-    BUILDID=$(/home/steam/steamcmd/steamcmd.sh +login anonymous +app_info_print 1690800 +quit | \
+    APP_BUILD_ID=$(steamcmd +login anonymous +app_info_print 1690800 +quit | \
     awk 'BEGIN { capture = 0; } \
     /"1690800"/ { capture = 1; } \
     capture && /"branches"/ { inBranches = 1; } \
@@ -30,70 +30,66 @@ steps:
     inPublic && /"buildid"/ { \
         gsub(/[^0-9]/, "", $0); print; exit; \
     }')
-  - echo $BUILDID
-  - echo "export BUILDID=$${BUILDID}" > /scratch/EXTRA_ENVIRONMENT
+  - echo "export APP_BUILD_ID=$${APP_BUILD_ID}" > /scratch/EXTRA_ENVIRONMENT
   - cat /scratch/EXTRA_ENVIRONMENT
   volumes:
   - name: scratch
     path: /scratch
 
-# - name: print-app-version
-#   image: docker.io/library/docker:25.0.2-dind-alpine3.19
-#   commands:
-#   - source /scratch/EXTRA_ENVIRONMENT
-#   - echo $BUILDID
-#   depends_on:
-#   - get-app-version
-#   volumes:
-#   - name: scratch
-#     path: /scratch
+- name: build
+  image: docker.io/library/docker:25.0.2-dind-alpine3.19
+  commands:
+  - sleep 10 # give docker enough time to initialize
+  - docker image build -t image:latest .
+  volumes:
+  - name: dockersock
+    path: /var/run
 
-# - name: build
-#   image: docker.io/library/docker:25.0.2-dind-alpine3.19
-#   commands:
-#   - sleep 10 # give docker enough time to initialize
-#   - docker image build -t image:latest .
-#   volumes:
-#   - name: dockersock
-#     path: /var/run
+- name: push-gitea
+  image: docker.io/library/docker:25.0.2-dind-alpine3.19
+  commands:
+  - source /scratch/EXTRA_ENVIRONMENT
+  - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
+  - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:latest
+  - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:app_build_id${APP_BUILD_ID}
+  - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:ci_build${DRONE_BUILD_NUMBER}
+  - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:commit_sha${DRONE_COMMIT_SHA:0:12}
+  - docker image push --all-tags git.williammiceli.systems/william/docker_satisfactory-server
+  depends_on:
+    - build
+  environment:
+    GITEA_USERNAME:
+      from_secret: GITEA_USERNAME
+    GITEA_TOKEN:
+      from_secret: GITEA_TOKEN
+  volumes:
+  - name: dockersock
+    path: /var/run
+  - name: scratch
+    path: /scratch
 
-# - name: push-gitea
-#   image: docker.io/library/docker:25.0.2-dind-alpine3.19
-#   commands:
-#   - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
-#   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:latest
-#   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:build${DRONE_BUILD_NUMBER}
-#   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:sha${DRONE_COMMIT_SHA:0:12}
-#   - docker image push --all-tags git.williammiceli.systems/william/docker_satisfactory-server
-#   depends_on:
-#     - build
-#   environment:
-#     GITEA_USERNAME:
-#       from_secret: GITEA_USERNAME
-#     GITEA_TOKEN:
-#       from_secret: GITEA_TOKEN
-#   volumes:
-#   - name: dockersock
-#     path: /var/run
-
-# - name: push-dockerhub
-#   image: docker.io/library/docker:25.0.2-dind-alpine3.19
-#   commands:
-#   - echo $DOCKER_TOKEN | docker login docker.io --username $DOCKER_USERNAME --password-stdin
-#   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:latest
-#   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:build${DRONE_BUILD_NUMBER}
-#   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:sha${DRONE_COMMIT_SHA:0:12}
-#   - docker image push --all-tags docker.io/williammiceli/satisfactory-server
-#   depends_on:
-#     - build
-#   environment:
-#     DOCKER_USERNAME:
-#       from_secret: DOCKER_USERNAME
-#     DOCKER_TOKEN:
-#       from_secret: DOCKER_TOKEN
-#   volumes:
-#   - name: dockersock
-#     path: /var/run
+- name: push-dockerhub
+  image: docker.io/library/docker:25.0.2-dind-alpine3.19
+  commands:
+  - source /scratch/EXTRA_ENVIRONMENT
+  - echo $DOCKER_TOKEN | docker login docker.io --username $DOCKER_USERNAME --password-stdin
+  - docker image tag image:latest docker.io/williammiceli/satisfactory-server:latest
+  - docker image tag image:latest docker.io/williammiceli/satisfactory-server:app_build_id${APP_BUILD_ID}
+  - docker image tag image:latest docker.io/williammiceli/satisfactory-server:ci_build${DRONE_BUILD_NUMBER}
+  - docker image tag image:latest docker.io/williammiceli/satisfactory-server:commit_sha${DRONE_COMMIT_SHA:0:12}
+  - docker image push --all-tags docker.io/williammiceli/satisfactory-server
+  depends_on:
+    - build
+  environment:
+    DOCKER_USERNAME:
+      from_secret: DOCKER_USERNAME
+    DOCKER_TOKEN:
+      from_secret: DOCKER_TOKEN
+  volumes:
+  - name: dockersock
+    path: /var/run
+  - name: scratch
+    path: /scratch
 
 volumes:
 - name: dockersock
