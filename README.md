@@ -7,6 +7,11 @@
 
 # Usage
 
+## Public Image Repository
+
+[Docker Hub](https://hub.docker.com/r/williammiceli/satisfactory-server)
+
+
 ## Running This Image
 
 ### One-line (Useful for Testing)
@@ -22,7 +27,7 @@ version: '3.8'
 
 services:
   satisfactory-server:
-    image: docker.io/williammiceli/satisfactory-server:latest  # Replace with your actual image path
+    image: docker.io/williammiceli/satisfactory-server:latest
     ports:
       - "7777:7777/udp"
       - "15000:15000/udp"
