@@ -28,7 +28,8 @@ USER steam
 WORKDIR /home/steam
 
 # Install Satisfactory dedicated server
-RUN steamcmd +force_install_dir /home/steam/satisfactory_server +login anonymous +app_update 1690800 -beta public validate +quit
+RUN steamcmd +force_install_dir /home/steam/satisfactory_server +login anonymous +app_update 1690800 -beta public validate +quit && \
+    rm -rf /tmp/* /var/tmp/* /home/steam/.local /home/steam/.steam
 
 # Expose ports:
 # - 7777/udp for game traffic
