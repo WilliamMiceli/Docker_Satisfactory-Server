@@ -40,7 +40,7 @@ steps:
   image: docker.io/library/docker:25.0.3-git
   commands:
   - sleep 10 # give docker enough time to initialize
-  - docker image build --cache-from git.williammiceli.systems/william/docker_satisfactory-server:latest --tag image:latest .
+  - docker image build --tag image:latest .
   volumes:
   - name: dockersock
     path: /var/run
