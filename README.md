@@ -5,3 +5,4 @@
 * https://openai.com/chatgpt
 * https://github.com/steamcmd/docker
 * https://developer.valvesoftware.com/wiki/SteamCMD#Ubuntu
+* https://laszlo.cloud/drone-environment-variables-three-tips
