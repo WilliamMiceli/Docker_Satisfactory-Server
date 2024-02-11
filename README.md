@@ -22,6 +22,10 @@ docker run -d -p 7777:7777/udp -p 15000:15000/udp -p 15777:15777/udp -v /path/to
 
 ### Docker Compose
 
+#### Create compose file
+
+Create 'docker-compose.yaml' using the following as example/template:
+
 ```yaml
 version: '3.8'
 
@@ -37,6 +41,22 @@ services:
         source: ./data  # Path to your local directory for server data
         target: /home/steam/.config/Epic/FactoryGame/Saved
     restart: unless-stopped
+```
+
+#### Starting Container
+
+While in same directory of your 'docker-compose.yaml':
+
+```sh
+docker compose up -d
+```
+
+#### Stopping Container
+
+While in same directory of your 'docker-compose.yaml':
+
+```sh
+docker compose down
 ```
 
 ## Updating The App
