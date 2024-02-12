@@ -7,10 +7,6 @@ trigger:
   - main
   event:
   - push
-  - cron
-  cron:
-    include:
-    - 0 0 6 1 * * # Every first of the month at 6 AM
 
 services:
 - name: docker
