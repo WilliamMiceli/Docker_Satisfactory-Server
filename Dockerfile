@@ -24,7 +24,7 @@ ENV LANGUAGE 'en_US:en'
 RUN useradd -m steam
 
 # Setup Directory for Persistent Data
-RUN mkdir -p /home/steam/.config/Epic/FactoryGame/Saved/SaveGames /persistent && \
+RUN mkdir -p /home/steam/.config/Epic/FactoryGame/Saved /persistent && \
     ln -s /persistent /home/steam/.config/Epic/FactoryGame/Saved/SaveGames && \
     chown -R steam /persistent
 
@@ -51,5 +51,5 @@ CMD ["/home/steam/satisfactory_server/FactoryServer.sh"]
 # Labels
 LABEL org.opencontainers.image.authors="William Miceli; https://github.com/WilliamMiceli; https://williammiceli.me"
 LABEL org.opencontainers.image.source=https://github.com/WilliamMiceli/Docker_Satisfactory-Server
-LABEL org.opencontainers.image.revision=$${DRONE_COMMIT_SHA}
-LABEL org.opencontainers.image.created=$${DRONE_BUILD_STARTED}
+LABEL org.opencontainers.image.revision=$DRONE_COMMIT_SHA
+LABEL org.opencontainers.image.created=$DRONE_BUILD_STARTED

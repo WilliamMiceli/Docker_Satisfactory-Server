@@ -13,10 +13,10 @@
 
 ## Available Tags
 
--	[`latest`](https://hub.docker.com/r/williammiceli/satisfactory-server/tags?name=latest)
--	[`app_build_id-<id>`](https://hub.docker.com/r/williammiceli/satisfactory-server/tags?name=app_build_id)
--	[`ci_build-<number>`](https://hub.docker.com/r/williammiceli/satisfactory-server/tags?name=ci_build)
--	[`commit_sha-<hash>`](https://hub.docker.com/r/williammiceli/satisfactory-server/tags?name=commit_sha)
+*	[`latest`](https://hub.docker.com/r/williammiceli/satisfactory-server/tags?name=latest)
+*	[`app_build_id-<id>`](https://hub.docker.com/r/williammiceli/satisfactory-server/tags?name=app_build_id-)
+*	[`ci_build-<number>`](https://hub.docker.com/r/williammiceli/satisfactory-server/tags?name=ci_build-)
+*	[`commit_sha-<hash>`](https://hub.docker.com/r/williammiceli/satisfactory-server/tags?name=commit_sha-)
 
 ## Running This Image
 
