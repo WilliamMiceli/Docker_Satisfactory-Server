@@ -13,7 +13,7 @@ RUN dpkg --add-architecture i386 && \
     apt-get install -y --no-install-recommends ca-certificates locales steamcmd && \
     ln -s /usr/games/steamcmd /usr/bin/steamcmd && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
 
 # Add unicode support
 RUN locale-gen en_US.UTF-8
@@ -42,3 +42,9 @@ VOLUME ["/home/steam/.config/Epic/FactoryGame/Saved"]
 
 # Start command for the server
 CMD ["/home/steam/satisfactory_server/FactoryServer.sh"]
+
+# Labels
+LABEL org.opencontainers.image.authors="William Miceli; https://github.com/WilliamMiceli; https://williammiceli.me"
+LABEL org.opencontainers.image.source=https://github.com/WilliamMiceli/Docker_Satisfactory-Server
+LABEL org.opencontainers.image.revision=${DRONE_COMMIT_SHA}
+LABEL org.opencontainers.image.created=${DRONE_BUILD_STARTED}
