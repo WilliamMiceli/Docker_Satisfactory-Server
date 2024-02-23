@@ -23,14 +23,17 @@ ENV LANGUAGE 'en_US:en'
 # Create user for SteamCMD
 RUN useradd -m steam
 
+# Setup Directory for Persistent Data
+RUN mkdir -p /home/steam/.config/Epic/FactoryGame/Saved/SaveGames /persistent && \
+    ln -s /persistent /home/steam/.config/Epic/FactoryGame/Saved/SaveGames && \
+    chown -R steam /persistent
+
 # Switch to Steam user
 USER steam
 WORKDIR /home/steam
 
 # Install Satisfactory dedicated server
-RUN mkdir -p /home/steam/.config/Epic/FactoryGame/Saved/SaveGames /persistent && \
-    ln -s /persistent /home/steam/.config/Epic/FactoryGame/Saved/SaveGames && \
-    steamcmd +force_install_dir /home/steam/satisfactory_server +login anonymous +app_update 1690800 -beta public validate +quit && \
+RUN steamcmd +force_install_dir /home/steam/satisfactory_server +login anonymous +app_update 1690800 -beta public validate +quit && \
     rm -rf /tmp/* /var/tmp/* /home/steam/.local /home/steam/.steam
 
 # Expose ports:
