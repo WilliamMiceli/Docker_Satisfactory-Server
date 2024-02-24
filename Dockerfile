@@ -24,7 +24,7 @@ ENV LANGUAGE 'en_US:en'
 RUN useradd -m steam
 
 # Setup Directory for Persistent Data
-RUN mkdir -p /home/steam/.config/Epic/FactoryGame/Saved/SaveGames /persistent && \
+RUN mkdir -p /home/steam/.config/Epic/FactoryGame/Saved /persistent && \
     ln -s /persistent /home/steam/.config/Epic/FactoryGame/Saved/SaveGames && \
     chown -R steam /persistent
 
