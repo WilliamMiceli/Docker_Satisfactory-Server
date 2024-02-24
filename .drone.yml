@@ -41,11 +41,11 @@ steps:
   image: docker.io/library/docker:25.0.3-git
   commands:
   - sleep 10 # give docker enough time to initialize
-  - |
-    docker image build \
-    --build-arg DRONE_BUILD_STARTED=$DRONE_BUILD_STARTED \
-    --build-arg DRONE_COMMIT_SHA=$DRONE_COMMIT_SHA \
-    --tag image:latest \
+  - >
+    docker image build
+    --build-arg DRONE_BUILD_STARTED=$DRONE_BUILD_STARTED
+    --build-arg DRONE_COMMIT_SHA=$DRONE_COMMIT_SHA
+    --tag image:latest
     .
   volumes:
   - name: dockersock
