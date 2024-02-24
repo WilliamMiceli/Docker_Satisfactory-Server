@@ -7,7 +7,6 @@ trigger:
   - main
   event:
   - push
-  - tag
 
 services:
 - name: docker
@@ -41,7 +40,12 @@ steps:
   image: docker.io/library/docker:25.0.3-git
   commands:
   - sleep 10 # give docker enough time to initialize
-  - docker image build --tag image:latest .
+  - >
+    docker image build
+    --build-arg DRONE_BUILD_STARTED=$DRONE_BUILD_STARTED
+    --build-arg DRONE_COMMIT_SHA=$DRONE_COMMIT_SHA
+    --tag image:latest
+    .
   volumes:
   - name: dockersock
     path: /var/run
@@ -52,9 +56,6 @@ steps:
   - source /scratch/EXTRA_ENVIRONMENT
   - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:latest
-  - if [ -n "$DRONE_SEMVER" ]; then docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:${DRONE_SEMVER_MAJOR}; fi
-  - if [ -n "$DRONE_SEMVER" ]; then docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:${DRONE_SEMVER_MAJOR}.${DRONE_SEMVER_MINOR}; fi
-  - if [ -n "$DRONE_SEMVER" ]; then docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:${DRONE_SEMVER_MAJOR}.${DRONE_SEMVER_MINOR}.${DRONE_SEMVER_PATCH}; fi
   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:app_build_id-$${APP_BUILD_ID}
   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:ci_build-${DRONE_BUILD_NUMBER}
   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${DRONE_COMMIT_SHA:0:12}
@@ -79,9 +80,6 @@ steps:
   - source /scratch/EXTRA_ENVIRONMENT
   - echo $DOCKER_TOKEN | docker login docker.io --username $DOCKER_USERNAME --password-stdin
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:latest
-  - if [ -n "$DRONE_SEMVER" ]; then docker image tag image:latest docker.io/williammiceli/satisfactory-server:${DRONE_SEMVER_MAJOR}; fi
-  - if [ -n "$DRONE_SEMVER" ]; then docker image tag image:latest docker.io/williammiceli/satisfactory-server:${DRONE_SEMVER_MAJOR}.${DRONE_SEMVER_MINOR}; fi
-  - if [ -n "$DRONE_SEMVER" ]; then docker image tag image:latest docker.io/williammiceli/satisfactory-server:${DRONE_SEMVER_MAJOR}.${DRONE_SEMVER_MINOR}.${DRONE_SEMVER_PATCH}; fi
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:app_build_id-$${APP_BUILD_ID}
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:ci_build-${DRONE_BUILD_NUMBER}
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:commit_sha-${DRONE_COMMIT_SHA:0:12}
