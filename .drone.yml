@@ -37,20 +37,24 @@ steps:
     path: /scratch
 
 - name: build
+  depends_on:
+  - get-app-version
   image: docker.io/library/docker:25.0.3-git
   commands:
-  - sleep 10 # give docker enough time to initialize
   - >
     docker image build
     --build-arg DRONE_BUILD_STARTED=$DRONE_BUILD_STARTED
     --build-arg DRONE_COMMIT_SHA=$DRONE_COMMIT_SHA
     --tag image:latest
+    --file Dockerfile
     .
   volumes:
   - name: dockersock
     path: /var/run
 
 - name: push-gitea
+  depends_on:
+    - build
   image: docker.io/library/docker:25.0.3-git
   commands:
   - source /scratch/EXTRA_ENVIRONMENT
@@ -60,9 +64,6 @@ steps:
   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:ci_build-${DRONE_BUILD_NUMBER}
   - docker image tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${DRONE_COMMIT_SHA:0:12}
   - docker image push --all-tags git.williammiceli.systems/william/docker_satisfactory-server
-  depends_on:
-    - build
-    - get-app-version
   environment:
     GITEA_USERNAME:
       from_secret: GITEA_USERNAME
@@ -75,6 +76,8 @@ steps:
     path: /scratch
 
 - name: push-dockerhub
+  depends_on:
+    - push-gitea
   image: docker.io/library/docker:25.0.3-git
   commands:
   - source /scratch/EXTRA_ENVIRONMENT
@@ -84,9 +87,6 @@ steps:
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:ci_build-${DRONE_BUILD_NUMBER}
   - docker image tag image:latest docker.io/williammiceli/satisfactory-server:commit_sha-${DRONE_COMMIT_SHA:0:12}
   - docker image push --all-tags docker.io/williammiceli/satisfactory-server
-  depends_on:
-    - build
-    - get-app-version
   environment:
     DOCKER_USERNAME:
       from_secret: DOCKER_USERNAME
