@@ -1,5 +1,10 @@
-[![Drone Build Status](https://img.shields.io/drone/build/William/Docker_Satisfactory-Server?server=https%3A%2F%2Fdrone.williammiceli.systems&style=for-the-badge&label=Build%20Status)](https://drone.williammiceli.systems/William/Docker_Satisfactory-Server)
+![Gitea Build Status](https://gitea.williammiceli.systems/William/Docker_Satisfactory-Server/actions/workflows/build.yaml/badge.svg?branch=main)
 [![Docker Image Size](https://img.shields.io/docker/image-size/williammiceli/satisfactory-server?style=for-the-badge)](https://hub.docker.com/r/williammiceli/satisfactory-server)
+[![Docker Pulls](https://img.shields.io/docker/pulls/williammiceli/satisfactory-server?style=for-the-badge)](https://hub.docker.com/r/williammiceli/satisfactory-server)
+[![Docker Stars](https://img.shields.io/docker/stars/williammiceli/satisfactory-server?style=for-the-badge)](https://hub.docker.com/r/williammiceli/satisfactory-server)
+[![Docker Image Version](https://img.shields.io/docker/v/williammiceli/satisfactory-server?sort=date&style=for-the-badge)](https://hub.docker.com/r/williammiceli/satisfactory-server)
+
+
 
 ![Satisfactory Logo](https://img2.storyblok.com/fit-in/0x300/filters:format(webp)/f/110098/5405x1416/10decfbcac/hero-logo.png)
 
@@ -78,15 +83,14 @@ docker image pull williammiceli/satisfactory-server:latest
 steamcmd +force_install_dir /home/steam/satisfactory_server +login anonymous +app_update 1690800 -beta public validate +quit
 ```
 
-![Player Thumbs Up](https://img2.storyblok.com/fit-in/0x800/filters:format(png)/f/110098/600x730/99e92fe34f/hero-graphic.png)
+![Game Character Thumbs Up](https://img2.storyblok.com/fit-in/0x800/filters:format(png)/f/110098/600x730/99e92fe34f/hero-graphic.png)
 
 
 # Meta
 
 * [Docker Hub](https://hub.docker.com/r/williammiceli/satisfactory-server)
-* [Build System](https://drone.williammiceli.systems/William/Docker_Satisfactory-Server)
 
-## Credits for Useful References
+## Credits for Useful References/Resources
 
 * https://openai.com/chatgpt
 * https://github.com/steamcmd/docker

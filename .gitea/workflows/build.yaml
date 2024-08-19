@@ -1,0 +1,229 @@
+name: Build and Push
+
+on: [push]
+
+jobs:
+  get-steam-app-version:
+    runs-on: ubuntu-latest
+    outputs:
+      APP_BUILD_ID: ${{steps.get_app_build_id.outputs.APP_BUILD_ID}}
+
+    steps:
+
+      - name: DEBUG1
+        run: |
+          echo "CI_DOCKER_USERNAME: ${{vars.DOCKER_USERNAME}}"
+          echo "Repo Owner: ${{GITHUB.event.repository.owner.login}}"
+          echo "CONTAINER_NAME: ${{vars.CONTAINER_NAME}}"
+
+      - name: Install SteamCMD Dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y lib32gcc-s1 wget ca-certificates
+
+      - name: Download and Extract SteamCMD
+        run: |
+          mkdir -p ~/Steam && cd ~/Steam
+          wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+          tar -xvzf steamcmd_linux.tar.gz
+
+      - name: Get APP_BUILD_ID
+        id: get_app_build_id
+        run: |
+          cd ~/Steam
+          APP_BUILD_ID=$(./steamcmd.sh +login anonymous +app_info_print 1690800 +quit | \
+          awk 'BEGIN { capture = 0; } \
+          /"1690800"/ { capture = 1; } \
+          capture && /"branches"/ { inBranches = 1; } \
+          inBranches && /"public"/ { inPublic = 1; next; } \
+          inPublic && /"buildid"/ { \
+              gsub(/[^0-9]/, "", $0); print; exit; \
+          }')
+          export GITEA_OUTPUT="${GITEA_OUTPUT:+$GITEA_OUTPUT:}APP_BUILD_ID=$APP_BUILD_ID"
+          echo "APP_BUILD_ID=$APP_BUILD_ID"
+          echo "APP_BUILD_ID=$APP_BUILD_ID" >> "$GITHUB_OUTPUT"
+
+  build:
+    runs-on: ubuntu-latest
+    container: 
+      image: docker.io/library/ubuntu:latest
+      options:
+        --privileged
+        --add-host ${{env.DIND_SERVICE_HOSTNAME}}:${{env.DIND_SERVICE_IP}}
+      volumes:
+        - /artifacts/:/artifacts/
+        - /certs/client/:/certs/client/
+    env:
+      DOCKER_HOST: tcp://${{env.DIND_SERVICE_HOSTNAME}}:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs/client/
+      CONTAINER_NAME: satisfactory-server
+
+    steps:
+      - name: Install Required Build Tools
+        run: |
+          apt-get update
+
+          # Install Git
+          apt-get install git -y
+
+          # Install Docker (https://docs.docker.com/engine/install/ubuntu/)
+          apt-get install ca-certificates curl -y
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          chmod a+r /etc/apt/keyrings/docker.asc
+
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get update
+          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+
+      - name: Checkout Code
+        run: |
+          pwd
+          git clone ${{GITHUB.server_url}}/${{GITHUB.repository}}.git ./
+          pwd
+          git checkout ${{GITHUB.sha}} --recurse-submodules
+          pwd
+
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(GITHUB) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Clean Old Images
+        continue-on-error: true
+        run: |
+          docker rmi --force $(docker images --quiet '${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
+          || docker rmi --force $(docker images --quiet '${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
+
+      - name: Create Docker OCI Builder
+        run: |
+          docker context create buildx-build
+          docker buildx create --name ${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}} --driver docker-container --use --bootstrap buildx-build
+          docker buildx inspect ${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}} --bootstrap
+
+      - name: Build Docker Image
+        run: |
+          pwd
+          mkdir -p /artifacts/${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}}/
+          docker buildx build \
+            --builder ${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}} \
+            --platform=linux/amd64 \
+            --tag image:latest \
+            --file Dockerfile \
+            --build-arg CI_BUILD_STARTED=${{GITHUB.event.commits.timestamp}} \
+            --build-arg COMMIT_SHA=${{GITHUB.sha}} \
+            --output type=oci,dest=- \
+            . > /artifacts/${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}}/image.tar
+          ls -AhlR /artifacts/
+
+      - name: Remove Docker OCI Builder
+        if: always()
+        run: |
+          docker buildx rm ${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}}
+
+  push:
+    needs: [get-steam-app-version, build]
+    runs-on: ubuntu-latest
+    container: 
+      image: docker.io/library/ubuntu:latest
+      options:
+        --privileged
+        --add-host ${{env.DIND_SERVICE_HOSTNAME}}:${{env.DIND_SERVICE_IP}}
+      volumes:
+        - /artifacts/:/artifacts/
+        - /certs/client/:/certs/client/
+    env:
+      DOCKER_HOST: tcp://${{env.DIND_SERVICE_HOSTNAME}}:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs/client/
+      CONTAINER_NAME: satisfactory-server
+
+    steps:
+      - name: Dump environment context
+        env:
+          ENV_CONTENT: ${{ toJson(env) }}
+        run: echo "$ENV_CONTENT"
+
+      - name: Debug hostnames
+        run: |
+          apt-get update
+          apt-get install dnsutils iproute2 net-tools -y --no-install-recommends
+          cat /etc/hosts
+          hostname -I
+          ip a
+          host gitearunner-service-docker.personal-16-1.svc.cluster.local
+          host gitearunner-service-docker
+
+          netstat -ntlp
+
+      - name: Check Artifacts
+        run: |
+          ls -AhlR /artifacts/
+
+      - name: Install Docker Client
+        run: |
+          apt-get update
+
+          # Install Docker (https://docs.docker.com/engine/install/ubuntu/)
+          apt-get install ca-certificates curl -y
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          chmod a+r /etc/apt/keyrings/docker.asc
+
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get update
+          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+
+      - name: Check Connection to Docker Engine
+        run: |
+          docker info
+
+      - name: Load Image Into Docker Engine
+        run: |
+          docker image import /artifacts/${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}}/image.tar image:latest
+          docker image ls
+
+      - name: CLI Login to Gitea Registry
+        run: |
+          echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{vars.PACKAGE_OWNER_USERNAME}} --password-stdin
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: CLI Login to Docker Hub Registry
+        run: |
+          echo ${{secrets.CI_DOCKER_TOKEN}} | docker login docker.io --username ${{vars.DOCKER_USERNAME}} --password-stdin
+
+      - name: Tag and Push to Docker Hub
+        run: |
+          docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:latest
+          docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
+          docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Clean Old Images
+        if: always()
+        continue-on-error: true
+        run: |
+          docker rmi --force $(docker images --quiet '${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
+          || docker rmi --force $(docker images --quiet '${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
