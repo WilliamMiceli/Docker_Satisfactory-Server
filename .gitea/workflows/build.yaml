@@ -5,14 +5,24 @@ on: [push]
 jobs:
   get-steam-app-version:
     runs-on: ubuntu-latest
-    container:
-      image: steamcmd/steamcmd:alpine-3
-      options: --entrypoint /bin/sh
 
     steps:
+      - name: Install SteamCMD Dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y lib32gcc-s1 wget ca-certificates
+
+      - name: Download and Extract SteamCMD
+        run: |
+          mkdir -p ~/Steam && cd ~/Steam
+          wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+          tar -xvzf steamcmd_linux.tar.gz
+
       - name: Get APP_BUILD_ID
         run: |
-          APP_BUILD_ID=$(steamcmd +login anonymous +app_info_print 1690800 +quit | \
+          cd ~/Steam
+          APP_BUILD_ID=$(./steamcmd.sh +login anonymous +app_info_print 1690800 +quit | \
           awk 'BEGIN { capture = 0; } \
           /"1690800"/ { capture = 1; } \
           capture && /"branches"/ { inBranches = 1; } \
