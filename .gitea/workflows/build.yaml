@@ -5,6 +5,8 @@ on: [push]
 jobs:
   get-steam-app-version:
     runs-on: ubuntu-latest
+    # outputs:
+    #   APP_BUILD_ID: ${{ steps.get_app_build_id.outputs.APP_BUILD_ID }}
 
     steps:
       - name: Install SteamCMD Dependencies
@@ -20,6 +22,7 @@ jobs:
           tar -xvzf steamcmd_linux.tar.gz
 
       - name: Get APP_BUILD_ID
+        id: get_app_build_id
         run: |
           cd ~/Steam
           APP_BUILD_ID=$(./steamcmd.sh +login anonymous +app_info_print 1690800 +quit | \
@@ -31,7 +34,7 @@ jobs:
               gsub(/[^0-9]/, "", $0); print; exit; \
           }')
           echo "APP_BUILD_ID=$APP_BUILD_ID"
-          echo "APP_BUILD_ID=$APP_BUILD_ID" >> $GITEA_ENV
+          echo "APP_BUILD_ID=$APP_BUILD_ID" >> $GITEA_OUTPUT
   
   build:
     needs: get-steam-app-version
@@ -76,7 +79,7 @@ jobs:
           docker tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${{ gitea.sha::12 }}
           docker push --all-tags git.williammiceli.systems/william/docker_satisfactory-server
         env:
-          APP_BUILD_ID: ${{ env.APP_BUILD_ID }}
+          APP_BUILD_ID: ${{ steps.get_app_build_id.outputs.APP_BUILD_ID }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -92,4 +95,4 @@ jobs:
           docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{ gitea.sha::12 }}
           docker push --all-tags williammiceli/satisfactory-server
         env:
-          APP_BUILD_ID: ${{ env.APP_BUILD_ID }}
+          APP_BUILD_ID: ${{ steps.get_app_build_id.outputs.APP_BUILD_ID }}
