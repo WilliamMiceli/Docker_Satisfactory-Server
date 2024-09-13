@@ -21,6 +21,7 @@ jobs:
 
       - name: Get APP_BUILD_ID
         run: |
+          cd ~/Steam
           APP_BUILD_ID=$(./steamcmd.sh +login anonymous +app_info_print 1690800 +quit | \
           awk 'BEGIN { capture = 0; } \
           /"1690800"/ { capture = 1; } \
