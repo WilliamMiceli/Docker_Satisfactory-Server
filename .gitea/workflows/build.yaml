@@ -5,7 +5,9 @@ on: [push]
 jobs:
   get-steam-app-version:
     runs-on: ubuntu-latest
-    container: steamcmd/steamcmd:alpine-3
+    container:
+      image: steamcmd/steamcmd:alpine-3
+      options: --entrypoint /bin/sh
 
     steps:
       - name: Get APP_BUILD_ID
