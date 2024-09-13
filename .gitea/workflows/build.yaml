@@ -5,11 +5,11 @@ on: [push]
 jobs:
   get-steam-app-version:
     runs-on: ubuntu-latest
+    container: steamcmd/steamcmd:alpine-3
 
     steps:
       - name: Get APP_BUILD_ID
         run: |
-          curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf - && \
           APP_BUILD_ID=$(steamcmd +login anonymous +app_info_print 1690800 +quit | \
           awk 'BEGIN { capture = 0; } \
           /"1690800"/ { capture = 1; } \
@@ -22,7 +22,7 @@ jobs:
           echo "APP_BUILD_ID=$APP_BUILD_ID"
   
   build:
-    needs: get-app-version
+    needs: get-steam-app-version
     runs-on: ubuntu-latest
 
     steps:
