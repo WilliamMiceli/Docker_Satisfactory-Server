@@ -39,9 +39,15 @@ jobs:
   build:
     needs: get-steam-app-version
     runs-on: ubuntu-latest
-    env:
-      DOCKER_HOST: tcp://localhost:2376
-      DOCKER_TLS_VERIFY: '0'
+    services:
+      docker:
+        image: docker.io/library/docker:27.2.1-dind-alpine3.20
+        options: >
+          --privileged
+          -v /var/run:/var/run
+    # env:
+      # DOCKER_HOST: tcp://localhost:2376
+      # DOCKER_TLS_VERIFY: '0'
       # DOCKER_CERT_PATH: /certs/client
 
     steps:
