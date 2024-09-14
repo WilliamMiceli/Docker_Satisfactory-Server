@@ -35,7 +35,8 @@ jobs:
           }')
           echo "APP_BUILD_ID=$APP_BUILD_ID"
           # echo "APP_BUILD_ID=$APP_BUILD_ID" >> $GITEA_OUTPUT
-          export GITEA_OUTPUT="${GITEA_OUTPUT:+$GITEA_OUTPUT:}"APP_BUILD_ID=$APP_BUILD_ID""
+          export GITEA_OUTPUT="${GITEA_OUTPUT:+$GITEA_OUTPUT:}APP_BUILD_ID=$APP_BUILD_ID"
+          echo $GITEA_OUTPUT
   
   build:
     needs: get-steam-app-version
@@ -45,8 +46,7 @@ jobs:
         image: docker.io/library/docker:25.0.3-git
         options: >
           --privileged
-        volumes:
-        - /var/run:/var/run
+          -v /var/run/docker.sock:/var/run/docker.sock
     # env:
     #   DOCKER_HOST: tcp://localhost:2376
     #   DOCKER_TLS_VERIFY: '1'
