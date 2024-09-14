@@ -39,6 +39,12 @@ jobs:
   build:
     needs: get-steam-app-version
     runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker.io/library/docker:27.1.2
+        options: >
+          --privileged
+          -v /run/user/1000:/run/user/1000
     env:
       DOCKER_HOST: unix:///run/user/1000/docker.sock
       # DOCKER_TLS_VERIFY: '0'
