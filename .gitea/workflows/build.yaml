@@ -39,17 +39,10 @@ jobs:
   build:
     needs: get-steam-app-version
     runs-on: ubuntu-latest
-    # services:
-    #   docker:
-    #     image: docker.io/library/docker:25.0.3-git
-    #     options: >
-    #       --privileged
-    #     ports:
-    #     - 2375:2375
     env:
       DOCKER_HOST: tcp://localhost:2376
-      DOCKER_TLS_VERIFY: '1'
-      DOCKER_CERT_PATH: /certs/client
+      # DOCKER_TLS_VERIFY: '1'
+      # DOCKER_CERT_PATH: /certs/client
 
     steps:
       - name: Checkout code
