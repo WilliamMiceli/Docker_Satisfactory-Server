@@ -45,9 +45,9 @@ jobs:
         options: >
           --privileged
         ports:
-        - 2376:2376
+        - 2375:2375
     env:
-      DOCKER_HOST: tcp://localhost:2376
+      DOCKER_HOST: tcp://localhost:2375
     #   DOCKER_TLS_VERIFY: '1'
     #   DOCKER_CERT_PATH: /certs/client
 
