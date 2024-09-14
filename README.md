@@ -1,3 +1,4 @@
+![Gitea Build Status](https://git.williammiceli.systems/William/Docker_Satisfactory-Server/actions/workflows/build.yaml/badge.svg?branch=main)
 [![Drone Build Status](https://img.shields.io/drone/build/William/Docker_Satisfactory-Server?server=https%3A%2F%2Fdrone.williammiceli.systems&style=for-the-badge&label=Build%20Status)](https://drone.williammiceli.systems/William/Docker_Satisfactory-Server)
 [![Docker Image Size](https://img.shields.io/docker/image-size/williammiceli/satisfactory-server?style=for-the-badge)](https://hub.docker.com/r/williammiceli/satisfactory-server)
 
