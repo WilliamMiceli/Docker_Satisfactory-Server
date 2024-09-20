@@ -66,8 +66,8 @@ jobs:
           apt-get update
           apt-get install git -y
           git clone ${{github.server_url}}/${{github.repository}}.git workspace
-          git checkout ${{github.sha}} --recurse-submodules
           cd workspace
+          git checkout ${{github.sha}} --recurse-submodules
 
       # - name: Set up Docker Buildx
       #   uses: docker/setup-buildx-action@v3
