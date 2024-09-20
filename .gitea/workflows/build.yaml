@@ -64,7 +64,7 @@ jobs:
       - name: Checkout Code
         run: |
           git clone ${{github.server_url}}/${{github.repository}}.git
-          cd ${{github.repository}}
+          cd ${{github.repository.name}}
           git checkout ${{github.sha}}
 
       # - name: Set up Docker Buildx
