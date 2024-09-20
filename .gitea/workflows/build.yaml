@@ -39,14 +39,14 @@ jobs:
   build:
     needs: get-steam-app-version
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: docker.io/library/docker:27.1.2
-        options: >
-          --privileged
-          -v /run/user/1000:/run/user/1000
-    env:
-      DOCKER_HOST: unix:///run/user/1000/docker.sock
+    # services:
+    #   docker:
+    #     image: docker.io/library/docker:27.1.2
+    #     options: >
+    #       --privileged
+    #       -v /run/user/1000:/run/user/1000
+    # env:
+      # DOCKER_HOST: unix:///run/user/1000/docker.sock
       # DOCKER_TLS_VERIFY: '0'
       # DOCKER_CERT_PATH: /certs/client
 
@@ -56,12 +56,17 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver: kubernetes
+          driver-opts: |
+            namespace=personal-16-1
+            rootless=true
+            serviceaccount=gitearunner-serviceaccount
 
       - name: Build Docker Image
         run: |
-          docker build \
-            --build-arg DRONE_BUILD_STARTED=${{ gitea.run_started_at }} \
-            --build-arg DRONE_COMMIT_SHA=${{ gitea.sha }} \
+          docker buildx build\
+            --builder kube
             --tag image:latest \
             --file Dockerfile \
             .
