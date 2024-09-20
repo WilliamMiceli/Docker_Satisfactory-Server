@@ -63,7 +63,8 @@ jobs:
 
       - name: Checkout Code
         run: |
-          git clone --reference ${{github.ref}} --recurse-submodules ${{github.server_url}}/${{github.repository}}.git workspace
+          git clone ${{github.server_url}}/${{github.repository}}.git workspace
+          git checkout ${{github.sha}} --recurse-submodules
           cd workspace
 
       # - name: Set up Docker Buildx
