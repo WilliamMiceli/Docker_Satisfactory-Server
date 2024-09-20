@@ -39,16 +39,17 @@ jobs:
   build:
     needs: get-steam-app-version
     runs-on: ubuntu-latest
+    container: docker.io/library/docker:27.3.0-dind-rootless
     # services:
     #   docker:
     #     image: docker.io/library/docker:27.1.2
     #     options: >
     #       --privileged
     #       -v /run/user/1000:/run/user/1000
-    env:
+    # env:
       # DOCKER_HOST: unix:///run/user/1000/docker.sock
-      DOCKER_HOST: tcp://127.0.0.1:2376
-      DOCKER_TLS_VERIFY: '0'
+      # DOCKER_HOST: tcp://127.0.0.1:2376
+      # DOCKER_TLS_VERIFY: '0'
       # DOCKER_CERT_PATH: /certs/client
 
     steps:
