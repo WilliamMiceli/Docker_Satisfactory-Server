@@ -61,59 +61,37 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(gitea) }}
-        run: echo "$GITEA_CONTEXT"
+      - name: Checkout Code
+        run: |
+          git clone ${{github.server_url}}/${{github.repository}}.git
+          cd ${{github.repository}}
+          git checkout ${{github.sha}}
 
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "$JOB_CONTEXT"
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
+      #   with:
+      #     driver: kubernetes
+      #     driver-opts: |
+      #       namespace=personal-16-1
+      #       rootless=true
+      #       serviceaccount=gitearunner-serviceaccount
 
-      - name: Dump steps context
-        env:
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "$STEPS_CONTEXT"
-
-      - name: Dump runner context
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "$RUNNER_CONTEXT"
-
-      - name: Dump strategy context
-        env:
-          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-        run: echo "$STRATEGY_CONTEXT"
-
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
-
-
-      # - name: Checkout Code
-      #   run: |
-      #     git clone 
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver: kubernetes
-          driver-opts: |
-            namespace=personal-16-1
-            rootless=true
-            serviceaccount=gitearunner-serviceaccount
+      - name: Setup Docker Buildx
+        run: |
+          docker buildx create \
+            --bootstrap \
+            --driver kubernetes \
+            --name kube \
+            --driver-opt namespace=personal-16-1,rootless=true,serviceaccount=gitearunner-serviceaccount
 
       - name: Build Docker Image
         run: |
           docker buildx build\
-            --builder kube
+            --builder kube \
+            --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
             .
-        env:
-          DOCKER_BUILDKIT: 1
 
   push:
     needs: build
