@@ -10,7 +10,7 @@ trigger:
 
 services:
 - name: docker
-  image: docker.io/library/docker:27.3.0-dind-rootless
+  image: docker.io/library/docker:27.3.0-dind
   privileged: true
   volumes:
   - name: dockersock
@@ -39,7 +39,7 @@ steps:
 - name: build
   depends_on:
   - get-app-version
-  image: docker.io/library/docker:27.3.0-dind-rootless
+  image: docker.io/library/docker:27.3.0-dind
   commands:
   - >
     docker image build
@@ -55,7 +55,7 @@ steps:
 - name: push-gitea
   depends_on:
     - build
-  image: docker.io/library/docker:27.3.0-dind-rootless
+  image: docker.io/library/docker:27.3.0-dind
   commands:
   - source /scratch/EXTRA_ENVIRONMENT
   - echo $GITEA_TOKEN | docker login git.williammiceli.systems --username $GITEA_USERNAME --password-stdin
@@ -78,7 +78,7 @@ steps:
 - name: push-dockerhub
   depends_on:
     - push-gitea
-  image: docker.io/library/docker:27.3.0-dind-rootless
+  image: docker.io/library/docker:27.3.0-dind
   commands:
   - source /scratch/EXTRA_ENVIRONMENT
   - echo $DOCKER_TOKEN | docker login docker.io --username $DOCKER_USERNAME --password-stdin
