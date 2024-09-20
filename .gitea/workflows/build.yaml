@@ -39,7 +39,7 @@ jobs:
   build:
     needs: get-steam-app-version
     runs-on: ubuntu-latest
-    container: docker.io/library/docker:27.3.0-dind-rootless
+    # container: docker.io/library/docker:27.3.0-dind-rootless
     # services:
     #   docker:
     #     image: docker.io/library/docker:27.1.2
@@ -63,6 +63,8 @@ jobs:
 
       - name: Checkout Code
         run: |
+          apt-get update
+          apt-get install git -y
           git clone ${{github.server_url}}/${{github.repository}}.git workspace
           git checkout ${{github.sha}} --recurse-submodules
           cd workspace
