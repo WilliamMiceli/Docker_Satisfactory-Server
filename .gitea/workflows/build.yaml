@@ -39,6 +39,12 @@ jobs:
   build:
     needs: get-steam-app-version
     runs-on: ubuntu-latest
+    container: 
+      image: docker.io/library/ubuntu:latest
+      volumes:
+      - /secrets/kubeconfig-buildx:~/.kube/config
+    env:
+      KUBECONFIG: ~/.kube/config
     # container: docker.io/library/docker:27.3.0-dind-rootless
     # services:
     #   docker:
@@ -55,6 +61,10 @@ jobs:
     steps:
       # - name: Checkout code
       #   uses: actions/checkout@v4
+
+
+      - name: Check Kubeconfig
+        run: ls -r ~/.kube
 
       - name: Dump GitHub context
         env:
