@@ -42,7 +42,7 @@ jobs:
     container: 
       image: docker.io/library/ubuntu:latest
       volumes:
-      - /secrets/kubeconfig-buildx:$HOME/.kube/config
+      - /secrets/kubeconfig-buildx:/secrets/.kube/config
     env:
       KUBECONFIG: $HOME/.kube/config
     # container: docker.io/library/docker:27.3.0-dind-rootless
@@ -64,7 +64,7 @@ jobs:
 
 
       - name: Check Kubeconfig
-        run: ls -r $HOME/.kube
+        run: ls -r /secrets/
 
       - name: Dump GitHub context
         env:
