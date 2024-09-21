@@ -42,7 +42,7 @@ jobs:
     container: 
       image: docker.io/library/ubuntu:latest
       volumes:
-        - /secrets/kubeconfig-buildx:~/.kube/config
+        - /secrets/:~/.kube/
       # options:
       #   --privileged
     env:
@@ -67,7 +67,7 @@ jobs:
 
       - name: Check Kubeconfig
         run: |
-          ls -r $HOME/
+          ls -AGhlr $HOME/
           echo "done"
 
       - name: Dump GitHub context
