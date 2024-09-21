@@ -42,7 +42,9 @@ jobs:
     container: 
       image: docker.io/library/ubuntu:latest
       volumes:
-      - /secrets/kubeconfig-buildx:/secrets/.kube/config
+        - /secrets/kubeconfig-buildx:/secrets/.kube/config
+      options:
+        --privileged
     env:
       KUBECONFIG: $HOME/.kube/config
     # container: docker.io/library/docker:27.3.0-dind-rootless
