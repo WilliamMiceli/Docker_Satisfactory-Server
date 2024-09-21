@@ -70,6 +70,7 @@ jobs:
 
       - name: Check Kubeconfig
         run: |
+          echo "HOME=$HOME"
           ls -AhlR /root
           echo "done"
 
