@@ -42,12 +42,12 @@ jobs:
     container: 
       image: docker.io/library/ubuntu:latest
       volumes:
-        - /secrets/:~/.kube/
-        - /home/rootless/:~/secrets2/
+        - /secrets/:$HOME/.kube/
+        - /home/rootless/:$HOME/secrets2/
       options:
         --privileged
     env:
-      KUBECONFIG: ~/.kube/config
+      KUBECONFIG: $HOME/.kube/config
     # container: docker.io/library/docker:27.3.0-dind-rootless
     # services:
     #   docker:
@@ -68,6 +68,7 @@ jobs:
 
       - name: Check Kubeconfig
         run: |
+          echo "HOME=$HOME"
           ls -AGhlr $HOME/
           echo "done"
 
