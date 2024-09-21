@@ -104,31 +104,30 @@ jobs:
           cd workspace
           git checkout ${{github.sha}} --recurse-submodules
 
-      # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v3
-      #   with:
-      #     driver: kubernetes
-      #     driver-opts: |
-      #       namespace=personal-16-1
-      #       rootless=true
-      #       serviceaccount=gitearunner-serviceaccount
-
-      - name: Setup Docker Buildx
+      - name: Setup Docker Builder Container
         run: |
           docker buildx create \
             --bootstrap \
             --driver kubernetes \
-            --name kube \
+            --name gitearunner_${{github.repository_owner}}-${{github.repository.name}}-job${{github.run_number}} \
             --driver-opt namespace=personal-16-1,rootless=true
+
+      - name: Check Dockerfile
+        run: |
+          ls -AhlR ./
 
       - name: Build Docker Image
         run: |
           docker buildx build\
-            --builder kube \
+            --builder gitearunner_${{github.repository_owner}}-${{github.repository.name}}-job${{github.run_number}} \
             --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
             .
+      - name: Remove Docker Builder Container
+        if: always()
+        run: |
+          docker buildx rm gitearunner_${{github.repository_owner}}-${{github.repository.name}}-job${{github.run_number}}
 
   push:
     needs: build
