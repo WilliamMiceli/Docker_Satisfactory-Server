@@ -58,10 +58,10 @@ jobs:
     #       --privileged
     #       -v /run/user/1000:/run/user/1000
     # env:
-      DOCKER_HOST: unix:///run/user/1000/docker.sock
-      # DOCKER_HOST: tcp://127.0.0.1:2376
-      # DOCKER_TLS_VERIFY: '1'
-      # DOCKER_CERT_PATH: /certs/client
+      # DOCKER_HOST: unix:///run/user/1000/docker.sock
+      DOCKER_HOST: tcp://127.0.0.1:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs/client
 
     steps:
       # - name: Checkout code
@@ -70,7 +70,7 @@ jobs:
 
       - name: Check Kubeconfig
         run: |
-          ls -AGhlR /root
+          ls -AhlR /root
           echo "done"
 
       - name: Dump GitHub context
