@@ -101,8 +101,7 @@ jobs:
       - name: Checkout Code
         run: |
           pwd
-          git clone ${{github.server_url}}/${{github.repository}}.git workspace
-          cd workspace
+          git clone ${{github.server_url}}/${{github.repository}}.git ./
           pwd
           git checkout ${{github.sha}} --recurse-submodules
           pwd
@@ -122,6 +121,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
+          pwd
           docker buildx build\
             --builder gitearunner_${{github.repository_owner}}-${{github.repository.name}}-job${{github.run_number}} \
             --platform=linux/amd64 \
