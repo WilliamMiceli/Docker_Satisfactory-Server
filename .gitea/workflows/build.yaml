@@ -43,13 +43,13 @@ jobs:
       # image: docker.io/library/ubuntu:latest
       image: docker.io/library/docker:27.3.1-dind-rootless
       volumes:
-        - /secrets/kubeconfig-buildx:/root/.kube/config
+        - /secrets/kubeconfig-buildx:/home/rootless/.kube/config
         # - /run/user/1000/docker.sock:/run/user/1000/docker.sock
         - /certs/client:/certs/client
       # options:
       #   --privileged
     env:
-      KUBECONFIG: /root/.kube/config
+      KUBECONFIG: /home/rootless/.kube/config
     # container: docker.io/library/docker:27.3.1-dind-rootless
     # services:
     #   docker:
@@ -71,7 +71,7 @@ jobs:
       - name: Check Kubeconfig
         run: |
           echo "HOME=$HOME"
-          ls -AhlR /root
+          ls -AhlR /$HOME
           echo "done"
 
       - name: Dump GitHub context
