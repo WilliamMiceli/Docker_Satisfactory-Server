@@ -114,7 +114,7 @@ jobs:
           docker buildx create \
             --bootstrap \
             --driver kubernetes \
-            --name gitearunner_${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}- \
+            --name gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
             --driver-opt namespace=personal-16-1,rootless=true
 
       - name: Check Dockerfile
@@ -126,20 +126,20 @@ jobs:
         run: |
           pwd
           docker buildx build\
-            --builder gitearunner_${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}- \
+            --builder gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
             --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
             --build-arg CI_BUILD_STARTED=${{github.event.commits.timestamp}} \
             --build-arg COMMIT_SHA=${{github.sha}} \
-            --output type=tar,dest=/artifacts/${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}/ \
-            .
+            --output type=tar,dest=- \
+            . > /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
           ls -AhlR /artifacts/
 
       - name: Remove Docker Builder Container
         if: always()
         run: |
-          docker buildx rm --force gitearunner_${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}-
+          docker buildx rm --force gitearunner_${{github.event.repository.name}}_job${{github.run_number}}-
 
   push:
     needs: build
@@ -160,6 +160,14 @@ jobs:
         run: |
           ls -AhlR /artifacts/
 
+      - name: Load Image Into Docker Engine
+        run: |
+          docker image --input /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
+
+      - name: CLI Login to Gitea Registry
+        run: |
+          echo ${{ secrets.CI_GITEA_TOKEN }} | docker login git.williammiceli.systems --username ${{ secrets.CI_GITEA_USERNAME }} --password-stdin
+
       - name: Login to Gitea Registry
         uses: docker/login-action@v3
         with:
@@ -176,6 +184,11 @@ jobs:
           docker push --all-tags git.williammiceli.systems/william/docker_satisfactory-server
         env:
           APP_BUILD_ID: ${{ needs.get-steam-app-version.outputs.APP_BUILD_ID }}
+
+      - name: CLI Login to Docker Hub Registry
+        run: |
+          echo ${{ secrets.CI_DOCKER_TOKEN }} | docker login git.williammiceli.systems --username ${{ secrets.CI_DOCKER_USERNAME }} --password-stdin
+
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
