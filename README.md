@@ -89,7 +89,6 @@ steamcmd +force_install_dir /home/steam/satisfactory_server +login anonymous +ap
 # Meta
 
 * [Docker Hub](https://hub.docker.com/r/williammiceli/satisfactory-server)
-* [Build System](https://drone.williammiceli.systems/William/Docker_Satisfactory-Server)
 
 ## Credits for Useful References/Resources
 
