@@ -125,6 +125,7 @@ jobs:
       - name: Build Docker Image
         run: |
           pwd
+          mkdir -p /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/
           docker buildx build\
             --builder gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
             --platform=linux/amd64 \
