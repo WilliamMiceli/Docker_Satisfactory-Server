@@ -163,7 +163,8 @@ jobs:
 
       - name: Load Image Into Docker Engine
         run: |
-          docker image --input /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
+          docker image load --input /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
+          docker image ls
 
       - name: CLI Login to Gitea Registry
         run: |
