@@ -132,7 +132,7 @@ jobs:
             --file Dockerfile \
             --build-arg CI_BUILD_STARTED=${{github.event.commits.timestamp}} \
             --build-arg COMMIT_SHA=${{github.sha}} \
-            --output type=tar,dest=/artifacts/${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}/
+            --output type=tar,dest=/artifacts/${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}/ \
             .
           ls -AhlR /artifacts/
 
