@@ -17,8 +17,8 @@ RUN dpkg --add-architecture i386 && \
 
 # Add unicode support
 RUN locale-gen en_US.UTF-8
-ENV LANG 'en_US.UTF-8'
-ENV LANGUAGE 'en_US:en'
+ENV LANG='en_US.UTF-8'
+ENV LANGUAGE='en_US:en'
 
 # Create user for SteamCMD
 RUN useradd -m steam
@@ -49,9 +49,9 @@ VOLUME ["/persistent"]
 CMD ["/home/steam/satisfactory_server/FactoryServer.sh"]
 
 # Labels
-ARG DRONE_BUILD_STARTED
-ARG DRONE_COMMIT_SHA
+ARG CI_BUILD_STARTED
+ARG COMMIT_SHA
 LABEL org.opencontainers.image.authors="William Miceli; https://github.com/WilliamMiceli; https://williammiceli.me"
-LABEL org.opencontainers.image.created=$DRONE_BUILD_STARTED
-LABEL org.opencontainers.image.revision=$DRONE_COMMIT_SHA
+LABEL org.opencontainers.image.created=$CI_BUILD_STARTED
+LABEL org.opencontainers.image.revision=$COMMIT_SHA
 LABEL org.opencontainers.image.source=https://github.com/WilliamMiceli/Docker_Satisfactory-Server

@@ -5,8 +5,8 @@ on: [push]
 jobs:
   get-steam-app-version:
     runs-on: ubuntu-latest
-    # outputs:
-    #   APP_BUILD_ID: ${{ steps.get_app_build_id.outputs.APP_BUILD_ID }}
+    outputs:
+      APP_BUILD_ID: ${{ steps.get_app_build_id.outputs.APP_BUILD_ID }}
 
     steps:
       - name: Install SteamCMD Dependencies
@@ -34,7 +34,9 @@ jobs:
               gsub(/[^0-9]/, "", $0); print; exit; \
           }')
           export GITEA_OUTPUT="${GITEA_OUTPUT:+$GITEA_OUTPUT:}APP_BUILD_ID=$APP_BUILD_ID"
-          echo $GITEA_OUTPUT
+          echo "APP_BUILD_ID=$APP_BUILD_ID" >> "$GITHUB_OUTPUT"
+          echo "GITEA_OUTPUT=$GITEA_OUTPUT"
+          echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
   
   build:
     needs: get-steam-app-version
@@ -47,6 +49,7 @@ jobs:
         # - /secrets/kubeconfig-buildx:/home/rootless/.kube/config
         # - /run/user/1000/docker.sock:/run/user/1000/docker.sock
         - /certs/client:/certs/client
+        - /artifacts/:/artifacts/
       # options:
       #   --privileged
     env:
@@ -111,7 +114,7 @@ jobs:
           docker buildx create \
             --bootstrap \
             --driver kubernetes \
-            --name gitearunner_${{github.repository_owner}}-${{github.repository.name}}-job${{github.run_number}} \
+            --name gitearunner_${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}- \
             --driver-opt namespace=personal-16-1,rootless=true
 
       - name: Check Dockerfile
@@ -123,21 +126,39 @@ jobs:
         run: |
           pwd
           docker buildx build\
-            --builder gitearunner_${{github.repository_owner}}-${{github.repository.name}}-job${{github.run_number}} \
+            --builder gitearunner_${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}- \
             --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
+            --build-arg CI_BUILD_STARTED=${{github.event.commits.timestamp}} \
+            --build-arg COMMIT_SHA=${{github.sha}} \
+            --output type=tar,dest=/artifacts/${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}/
             .
+          ls -AhlR /artifacts/
+
       - name: Remove Docker Builder Container
         if: always()
         run: |
-          docker buildx rm --force gitearunner_${{github.repository_owner}}-${{github.repository.name}}-job${{github.run_number}}
+          docker buildx rm --force gitearunner_${{github.event.repository.owner.login}}-${{github.event.repository.name}}_job${{github.run_number}}-
 
   push:
     needs: build
     runs-on: ubuntu-latest
+    container: 
+      image: docker.io/library/docker:27.3.1-dind-rootless
+      volumes:
+        - /certs/client:/certs/client
+        - /artifacts/:/artifacts/
+    env:
+      DOCKER_HOST: tcp://127.0.0.1:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs/client
 
     steps:
+
+      - name: Check Artifacts
+        run: |
+          ls -AhlR /artifacts/
 
       - name: Login to Gitea Registry
         uses: docker/login-action@v3
@@ -154,7 +175,7 @@ jobs:
           docker tag image:latest git.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${{ gitea.sha::12 }}
           docker push --all-tags git.williammiceli.systems/william/docker_satisfactory-server
         env:
-          APP_BUILD_ID: ${{ steps.get_app_build_id.outputs.APP_BUILD_ID }}
+          APP_BUILD_ID: ${{ needs.get-steam-app-version.outputs.APP_BUILD_ID }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -170,4 +191,4 @@ jobs:
           docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{ gitea.sha::12 }}
           docker push --all-tags williammiceli/satisfactory-server
         env:
-          APP_BUILD_ID: ${{ steps.get_app_build_id.outputs.APP_BUILD_ID }}
+          APP_BUILD_ID: ${{ needs.get-steam-app-version.outputs.APP_BUILD_ID }}
