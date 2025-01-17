@@ -1,4 +1,4 @@
-![Gitea Build Status](https://git.williammiceli.systems/William/Docker_Satisfactory-Server/actions/workflows/build.yaml/badge.svg?branch=main)
+![Gitea Build Status](https://gitea.williammiceli.systems/William/Docker_Satisfactory-Server/actions/workflows/build.yaml/badge.svg?branch=main)
 [![Docker Image Size](https://img.shields.io/docker/image-size/williammiceli/satisfactory-server?style=for-the-badge)](https://hub.docker.com/r/williammiceli/satisfactory-server)
 [![Docker Pulls](https://img.shields.io/docker/pulls/williammiceli/satisfactory-server?style=for-the-badge)](https://hub.docker.com/r/williammiceli/satisfactory-server)
 [![Docker Stars](https://img.shields.io/docker/stars/williammiceli/satisfactory-server?style=for-the-badge)](https://hub.docker.com/r/williammiceli/satisfactory-server)
