@@ -59,11 +59,11 @@ jobs:
       - name: Debug hostnames
         run: |
           apt-get update
-          apt-get install dnsutils iproute2 -y
+          apt-get install dnsutils iproute2 net-tools -y --no-install-recommends
           hostname -I
           ip a
-          dig -x gitearunner-service-docker.personal-16-1.svc.cluster.local
-          dig -x gitearunner-service-docker
+          host gitearunner-service-docker.personal-16-1.svc.cluster.local
+          host gitearunner-service-docker
 
           netstat -ntlp
 
