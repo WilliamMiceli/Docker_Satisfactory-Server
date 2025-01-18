@@ -2,6 +2,14 @@ name: Build and Push
 
 on: [push]
 
+# services:
+#   docker:
+#     image: docker.io/library/docker:27.3.1-dind
+#     options:
+#       --privileged
+#     ports:
+#       - 2376:2376
+
 jobs:
   get-steam-app-version:
     runs-on: ubuntu-latest
@@ -131,10 +139,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     container: 
-      image: docker.io/library/docker:27.3.1-dind
-      options:
-        --privileged
-        --network=host
+      image: docker.io/library/ubuntu:latest
+      # options:
+      #   --privileged
+      #   --network=host
       volumes:
         - /certs/client:/certs/client
         - /artifacts/:/artifacts/
