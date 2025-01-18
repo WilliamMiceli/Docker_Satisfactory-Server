@@ -149,6 +149,10 @@ jobs:
       DOCKER_CERT_PATH: /certs/client
 
     steps:
+      - name: Check Connection to Docker Engine
+        run: |
+          docker info
+
       - name: Check Artifacts
         run: |
           ls -AhlR /artifacts/
