@@ -40,15 +40,14 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    # container: 
-    #   image: docker.io/library/ubuntu:latest
-    #   options:
-    #     --privileged
-    #     --network=host
-    #   volumes:
-    #     - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
-    #     - /certs/client:/certs/client
-    #     - /artifacts/:/artifacts/
+    container: 
+      image: docker.io/library/ubuntu:latest
+      options:
+        --privileged
+      volumes:
+        - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
+        - /certs/client:/certs/client
+        - /artifacts/:/artifacts/
     env:
       KUBECONFIG: /root/.kube/config
       # DOCKER_HOST: tcp://gitearunner-service-docker.personal-16-1.svc.cluster.local:2376
@@ -57,6 +56,14 @@ jobs:
       DOCKER_CERT_PATH: /certs/client
 
     steps:
+      - name: Debug hostnames
+        run: |
+          host localhost
+          hostname -I
+          ip a
+          host gitearunner-service-docker.personal-16-1.svc.cluster.local
+          host gitearunner-service-docker
+
       - name: Check Kubeconfig
         run: |
           echo "HOME=$HOME"
@@ -140,7 +147,6 @@ jobs:
   #     image: docker.io/library/ubuntu:latest
   #     options:
   #       --privileged
-  #       --network=host
   #     volumes:
   #       - /certs/client:/certs/client
   #       - /artifacts/:/artifacts/
