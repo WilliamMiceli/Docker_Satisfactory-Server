@@ -58,6 +58,7 @@ jobs:
     steps:
       - name: Debug hostnames
         run: |
+          apt-get update
           apt-get install dnsutils
           dig -x localhost
           hostname -I
