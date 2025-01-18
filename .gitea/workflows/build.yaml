@@ -133,9 +133,9 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: docker.io/library/ubuntu:latest
-      # options:
-      #   --privileged
-      #   --network=host
+      options:
+        --privileged
+        --network=host
       volumes:
         - /certs/client:/certs/client
         - /artifacts/:/artifacts/
