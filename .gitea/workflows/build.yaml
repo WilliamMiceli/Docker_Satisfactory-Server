@@ -49,7 +49,7 @@ jobs:
         - /certs/client:/certs/client
         - /artifacts/:/artifacts/
     env:
-      GITEA_RUNNER_NAME: "{{ env.GITEA_RUNNER_NAME }}"
+      GITEA_RUNNER_NAME_2: "{{ env.GITEA_RUNNER_NAME }}"
       KUBECONFIG: /root/.kube/config
       DOCKER_HOST: tcp://gitearunner-service-docker:2376
       # DOCKER_HOST: tcp://localhost:2376
@@ -60,6 +60,7 @@ jobs:
       - name: Check environment
         run: |
           echo GITEA_RUNNER_NAME=${GITEA_RUNNER_NAME}
+          echo GITEA_RUNNER_NAME_2=${GITEA_RUNNER_NAME_2}
 
       - name: Debug hostnames
         run: |
