@@ -70,6 +70,11 @@ jobs:
           ENV_CONTENT: ${{ toJson(env) }}
         run: echo "$ENV_CONTENT"
 
+      - name: Dump secrets context
+        env:
+          SECRETS_CONTENT: ${{ toJson(secrets) }}
+        run: echo "$SECRETS_CONTENT"
+
       - name: Debug hostnames
         run: |
           apt-get update
