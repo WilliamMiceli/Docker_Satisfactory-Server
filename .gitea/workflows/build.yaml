@@ -65,6 +65,8 @@ jobs:
           dig -x gitearunner-service-docker.personal-16-1.svc.cluster.local
           dig -x gitearunner-service-docker
 
+          netstat -ntlp
+
       - name: Check Kubeconfig
         run: |
           echo "HOME=$HOME"
