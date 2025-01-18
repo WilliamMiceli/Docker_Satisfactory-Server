@@ -52,7 +52,7 @@ jobs:
       A_TEST_ENV_NAME_1_2: "{{ env.A_TEST_ENV_NAME_1 }}"
       GITEA_RUNNER_NAME_2: "{{ env.GITEA_RUNNER_NAME }}"
       KUBECONFIG: /root/.kube/config
-      DOCKER_HOST: tcp://gitearunner-service-docker:2376
+      # DOCKER_HOST: tcp://gitearunner-service-docker:2376
       # DOCKER_HOST: tcp://localhost:2376
       DOCKER_TLS_VERIFY: '1'
       DOCKER_CERT_PATH: /certs/client
