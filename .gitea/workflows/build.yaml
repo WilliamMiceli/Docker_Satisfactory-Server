@@ -78,7 +78,6 @@ jobs:
           ip a
           host gitearunner-service-docker.personal-16-1.svc.cluster.local
           host gitearunner-service-docker
-          host docker
 
           netstat -ntlp
 
