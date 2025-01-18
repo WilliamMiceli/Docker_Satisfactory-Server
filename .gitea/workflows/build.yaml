@@ -2,14 +2,6 @@ name: Build and Push
 
 on: [push]
 
-# services:
-#   docker:
-#     image: docker.io/library/docker:27.3.1-dind
-#     options:
-#       --privileged
-#     ports:
-#       - 2376:2376
-
 jobs:
   get-steam-app-version:
     runs-on: ubuntu-latest
@@ -47,7 +39,7 @@ jobs:
           echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
 
   build:
-    needs: get-steam-app-version
+    # needs: get-steam-app-version
     runs-on: ubuntu-latest
     container: 
       image: docker.io/library/ubuntu:latest
@@ -62,7 +54,6 @@ jobs:
       DOCKER_CERT_PATH: /certs/client
 
     steps:
-
       - name: Check Kubeconfig
         run: |
           echo "HOME=$HOME"
@@ -152,10 +143,29 @@ jobs:
       DOCKER_CERT_PATH: /certs/client
 
     steps:
-
       - name: Check Artifacts
         run: |
           ls -AhlR /artifacts/
+
+      - name: Install Required Build Tools
+        run: |
+          apt-get update
+
+          # Install Git
+          apt-get install git -y
+
+          # Install Docker (https://docs.docker.com/engine/install/ubuntu/)
+          apt-get install ca-certificates curl -y
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          chmod a+r /etc/apt/keyrings/docker.asc
+
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get update
+          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
       - name: Load Image Into Docker Engine
         run: |
@@ -196,7 +206,6 @@ jobs:
   #   runs-on: ubuntu-latest
 
   #   steps:
-
   #     - name: Check Artifacts
   #       if: always()
   #       run: |
