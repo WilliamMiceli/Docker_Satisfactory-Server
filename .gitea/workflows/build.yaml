@@ -58,11 +58,12 @@ jobs:
     steps:
       - name: Debug hostnames
         run: |
-          getent ahostsv4 localhost
+          apt-get install dnsutils
+          dig -x localhost
           hostname -I
           ip a
-          getent ahostsv4 gitearunner-service-docker.personal-16-1.svc.cluster.local
-          getent ahostsv4 gitearunner-service-docker
+          dig -x gitearunner-service-docker.personal-16-1.svc.cluster.local
+          dig -x gitearunner-service-docker
 
       - name: Check Kubeconfig
         run: |
