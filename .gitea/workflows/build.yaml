@@ -37,7 +37,7 @@ jobs:
           echo "APP_BUILD_ID=$APP_BUILD_ID" >> "$GITHUB_OUTPUT"
           echo "GITEA_OUTPUT=$GITEA_OUTPUT"
           echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
-  
+
   build:
     needs: get-steam-app-version
     runs-on: ubuntu-latest
@@ -127,83 +127,37 @@ jobs:
         run: |
           docker buildx rm --force gitearunner_${{github.event.repository.name}}_job${{github.run_number}}-
 
-  # push:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   container: 
-  #     image: docker.io/library/docker:27.3.1-dind
-  #     volumes:
-  #       - /certs/client:/certs/client
-  #       - /artifacts/:/artifacts/
-  #   env:
-  #     DOCKER_HOST: tcp://127.0.0.1:2376
-  #     DOCKER_TLS_VERIFY: '1'
-  #     DOCKER_CERT_PATH: /certs/client
-
-  #   steps:
-
-  #     - name: Check Artifacts
-  #       run: |
-  #         ls -AhlR /artifacts/
-
-  #     - name: Load Image Into Docker Engine
-  #       run: |
-  #         docker image load --input /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
-  #         docker image ls
-
-  #     - name: CLI Login to Gitea Registry
-  #       run: |
-  #         echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_GITEA_USERNAME}} --password-stdin
-
-  #     - name: Tag and Push to Gitea Registry
-  #       run: |
-  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:latest
-  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:app_build_id-${APP_BUILD_ID}
-  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:ci_build-${{gitea.run_number}}
-  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${{gitea.sha}}
-  #         docker push --all-tags gitea.williammiceli.systems/william/docker_satisfactory-server
-  #       env:
-  #         APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
-
-  #     - name: CLI Login to Docker Hub Registry
-  #       run: |
-  #         echo ${{secrets.CI_DOCKER_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_DOCKER_USERNAME}} --password-stdin
-
-  #     - name: Tag and Push to Docker Hub
-  #       run: |
-  #         docker tag image:latest williammiceli/satisfactory-server:latest
-  #         docker tag image:latest williammiceli/satisfactory-server:app_build_id-${APP_BUILD_ID}
-  #         docker tag image:latest williammiceli/satisfactory-server:ci_build-${{gitea.run_number}}
-  #         docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{gitea.sha}}
-  #         docker push --all-tags williammiceli/satisfactory-server
-  #       env:
-  #         APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
-
-
-  push2:
+  push:
     needs: build
     runs-on: ubuntu-latest
+    container: 
+      image: docker.io/library/docker:27.3.1-dind
+      options:
+        --privileged
+      volumes:
+        - /certs/client:/certs/client
+        - /artifacts/:/artifacts/
+    env:
+      DOCKER_HOST: tcp://127.0.0.1:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs/client
 
     steps:
 
       - name: Check Artifacts
-        if: always()
         run: |
           ls -AhlR /artifacts/
 
       - name: Load Image Into Docker Engine
-        if: always()
         run: |
           docker image load --input /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
           docker image ls
 
       - name: CLI Login to Gitea Registry
-        if: always()
         run: |
           echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_GITEA_USERNAME}} --password-stdin
 
       - name: Tag and Push to Gitea Registry
-        if: always()
         run: |
           docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:latest
           docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:app_build_id-${APP_BUILD_ID}
@@ -214,12 +168,10 @@ jobs:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
       - name: CLI Login to Docker Hub Registry
-        if: always()
         run: |
           echo ${{secrets.CI_DOCKER_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_DOCKER_USERNAME}} --password-stdin
 
       - name: Tag and Push to Docker Hub
-        if: always()
         run: |
           docker tag image:latest williammiceli/satisfactory-server:latest
           docker tag image:latest williammiceli/satisfactory-server:app_build_id-${APP_BUILD_ID}
@@ -228,3 +180,53 @@ jobs:
           docker push --all-tags williammiceli/satisfactory-server
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+
+  # push2:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+
+  #     - name: Check Artifacts
+  #       if: always()
+  #       run: |
+  #         ls -AhlR /artifacts/
+
+  #     - name: Load Image Into Docker Engine
+  #       if: always()
+  #       run: |
+  #         docker image load --input /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
+  #         docker image ls
+
+  #     - name: CLI Login to Gitea Registry
+  #       if: always()
+  #       run: |
+  #         echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_GITEA_USERNAME}} --password-stdin
+
+  #     - name: Tag and Push to Gitea Registry
+  #       if: always()
+  #       run: |
+  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:latest
+  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:app_build_id-${APP_BUILD_ID}
+  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:ci_build-${{gitea.run_number}}
+  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${{gitea.sha}}
+  #         docker push --all-tags gitea.williammiceli.systems/william/docker_satisfactory-server
+  #       env:
+  #         APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+  #     - name: CLI Login to Docker Hub Registry
+  #       if: always()
+  #       run: |
+  #         echo ${{secrets.CI_DOCKER_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_DOCKER_USERNAME}} --password-stdin
+
+  #     - name: Tag and Push to Docker Hub
+  #       if: always()
+  #       run: |
+  #         docker tag image:latest williammiceli/satisfactory-server:latest
+  #         docker tag image:latest williammiceli/satisfactory-server:app_build_id-${APP_BUILD_ID}
+  #         docker tag image:latest williammiceli/satisfactory-server:ci_build-${{gitea.run_number}}
+  #         docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{gitea.sha}}
+  #         docker push --all-tags williammiceli/satisfactory-server
+  #       env:
+  #         APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
