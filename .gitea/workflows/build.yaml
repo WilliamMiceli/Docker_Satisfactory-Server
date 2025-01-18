@@ -59,7 +59,7 @@ jobs:
       - name: Debug hostnames
         run: |
           apt-get update
-          apt-get install dnsutils
+          apt-get install dnsutils -y
           dig -x localhost
           hostname -I
           ip a
