@@ -42,6 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: docker.io/library/ubuntu:latest
+      options:
+        --privileged
+        --network=host
       volumes:
         - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
         - /certs/client:/certs/client
