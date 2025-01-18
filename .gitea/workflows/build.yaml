@@ -3,131 +3,130 @@ name: Build and Push
 on: [push]
 
 jobs:
-  # get-steam-app-version:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     APP_BUILD_ID: ${{steps.get_app_build_id.outputs.APP_BUILD_ID}}
+  get-steam-app-version:
+    runs-on: ubuntu-latest
+    outputs:
+      APP_BUILD_ID: ${{steps.get_app_build_id.outputs.APP_BUILD_ID}}
 
-  #   steps:
-  #     - name: Install SteamCMD Dependencies
-  #       run: |
-  #         sudo dpkg --add-architecture i386
-  #         sudo apt-get update
-  #         sudo apt-get install -y lib32gcc-s1 wget ca-certificates
+    steps:
+      - name: Install SteamCMD Dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y lib32gcc-s1 wget ca-certificates
 
-  #     - name: Download and Extract SteamCMD
-  #       run: |
-  #         mkdir -p ~/Steam && cd ~/Steam
-  #         wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
-  #         tar -xvzf steamcmd_linux.tar.gz
+      - name: Download and Extract SteamCMD
+        run: |
+          mkdir -p ~/Steam && cd ~/Steam
+          wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+          tar -xvzf steamcmd_linux.tar.gz
 
-  #     - name: Get APP_BUILD_ID
-  #       id: get_app_build_id
-  #       run: |
-  #         cd ~/Steam
-  #         APP_BUILD_ID=$(./steamcmd.sh +login anonymous +app_info_print 1690800 +quit | \
-  #         awk 'BEGIN { capture = 0; } \
-  #         /"1690800"/ { capture = 1; } \
-  #         capture && /"branches"/ { inBranches = 1; } \
-  #         inBranches && /"public"/ { inPublic = 1; next; } \
-  #         inPublic && /"buildid"/ { \
-  #             gsub(/[^0-9]/, "", $0); print; exit; \
-  #         }')
-  #         export GITEA_OUTPUT="${GITEA_OUTPUT:+$GITEA_OUTPUT:}APP_BUILD_ID=$APP_BUILD_ID"
-  #         echo "APP_BUILD_ID=$APP_BUILD_ID" >> "$GITHUB_OUTPUT"
-  #         echo "GITEA_OUTPUT=$GITEA_OUTPUT"
-  #         echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
+      - name: Get APP_BUILD_ID
+        id: get_app_build_id
+        run: |
+          cd ~/Steam
+          APP_BUILD_ID=$(./steamcmd.sh +login anonymous +app_info_print 1690800 +quit | \
+          awk 'BEGIN { capture = 0; } \
+          /"1690800"/ { capture = 1; } \
+          capture && /"branches"/ { inBranches = 1; } \
+          inBranches && /"public"/ { inPublic = 1; next; } \
+          inPublic && /"buildid"/ { \
+              gsub(/[^0-9]/, "", $0); print; exit; \
+          }')
+          export GITEA_OUTPUT="${GITEA_OUTPUT:+$GITEA_OUTPUT:}APP_BUILD_ID=$APP_BUILD_ID"
+          echo "APP_BUILD_ID=$APP_BUILD_ID" >> "$GITHUB_OUTPUT"
+          echo "GITEA_OUTPUT=$GITEA_OUTPUT"
+          echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
 
-  # build:
-  #   # needs: get-steam-app-version
-  #   runs-on: ubuntu-latest
-  #   container: 
-  #     image: docker.io/library/ubuntu:latest
-  #     volumes:
-  #       - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
-  #       - /certs/client:/certs/client
-  #       - /artifacts/:/artifacts/
-  #   env:
-  #     KUBECONFIG: /root/.kube/config
-  #     DOCKER_HOST: tcp://127.0.0.1:2376
-  #     DOCKER_TLS_VERIFY: '1'
-  #     DOCKER_CERT_PATH: /certs/client
+  build:
+    runs-on: ubuntu-latest
+    container: 
+      image: docker.io/library/ubuntu:latest
+      volumes:
+        - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
+        - /certs/client:/certs/client
+        - /artifacts/:/artifacts/
+    env:
+      KUBECONFIG: /root/.kube/config
+      DOCKER_HOST: tcp://127.0.0.1:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs/client
 
-  #   steps:
-  #     - name: Check Kubeconfig
-  #       run: |
-  #         echo "HOME=$HOME"
-  #         ls -AhlR /$HOME
-  #         echo "done"
+    steps:
+      - name: Check Kubeconfig
+        run: |
+          echo "HOME=$HOME"
+          ls -AhlR /$HOME
+          echo "done"
 
-  #     - name: Install Required Build Tools
-  #       run: |
-  #         apt-get update
+      - name: Install Required Build Tools
+        run: |
+          apt-get update
 
-  #         # Install Git
-  #         apt-get install git -y
+          # Install Git
+          apt-get install git -y
 
-  #         # Install Docker (https://docs.docker.com/engine/install/ubuntu/)
-  #         apt-get install ca-certificates curl -y
-  #         install -m 0755 -d /etc/apt/keyrings
-  #         curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-  #         chmod a+r /etc/apt/keyrings/docker.asc
+          # Install Docker (https://docs.docker.com/engine/install/ubuntu/)
+          apt-get install ca-certificates curl -y
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          chmod a+r /etc/apt/keyrings/docker.asc
 
-  #         echo \
-  #           "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  #           $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  #           tee /etc/apt/sources.list.d/docker.list > /dev/null
-  #         apt-get update
-  #         apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get update
+          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-  #     - name: Dump GitHub context
-  #       env:
-  #         GITHUB_CONTEXT: ${{ toJson(github) }}
-  #       run: echo "$GITHUB_CONTEXT"
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
-  #     - name: Checkout Code
-  #       run: |
-  #         pwd
-  #         git clone ${{github.server_url}}/${{github.repository}}.git ./
-  #         pwd
-  #         git checkout ${{github.sha}} --recurse-submodules
-  #         pwd
+      - name: Checkout Code
+        run: |
+          pwd
+          git clone ${{github.server_url}}/${{github.repository}}.git ./
+          pwd
+          git checkout ${{github.sha}} --recurse-submodules
+          pwd
 
-  #     - name: Setup Docker Builder Container
-  #       run: |
-  #         docker buildx create \
-  #           --bootstrap \
-  #           --driver kubernetes \
-  #           --name gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
-  #           --driver-opt namespace=personal-16-1,rootless=true
+      - name: Setup Docker Builder Container
+        run: |
+          docker buildx create \
+            --bootstrap \
+            --driver kubernetes \
+            --name gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
+            --driver-opt namespace=personal-16-1,rootless=true
 
-  #     - name: Check Dockerfile
-  #       run: |
-  #         pwd
-  #         ls -AhlR ./
+      - name: Check Dockerfile
+        run: |
+          pwd
+          ls -AhlR ./
 
-  #     - name: Build Docker Image
-  #       run: |
-  #         pwd
-  #         mkdir -p /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/
-  #         docker buildx build \
-  #           --builder gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
-  #           --platform=linux/amd64 \
-  #           --tag image:latest \
-  #           --file Dockerfile \
-  #           --build-arg CI_BUILD_STARTED=${{github.event.commits.timestamp}} \
-  #           --build-arg COMMIT_SHA=${{github.sha}} \
-  #           --output type=tar,dest=- \
-  #           . > /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
-  #         ls -AhlR /artifacts/
+      - name: Build Docker Image
+        run: |
+          pwd
+          mkdir -p /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/
+          docker buildx build \
+            --builder gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
+            --platform=linux/amd64 \
+            --tag image:latest \
+            --file Dockerfile \
+            --build-arg CI_BUILD_STARTED=${{github.event.commits.timestamp}} \
+            --build-arg COMMIT_SHA=${{github.sha}} \
+            --output type=tar,dest=- \
+            . > /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
+          ls -AhlR /artifacts/
 
-  #     - name: Remove Docker Builder Container
-  #       if: always()
-  #       run: |
-  #         docker buildx rm --force gitearunner_${{github.event.repository.name}}_job${{github.run_number}}-
+      - name: Remove Docker Builder Container
+        if: always()
+        run: |
+          docker buildx rm --force gitearunner_${{github.event.repository.name}}_job${{github.run_number}}-
 
   push:
-    # needs: [get-steam-app-version, build]
+    needs: [get-steam-app-version, build]
     runs-on: ubuntu-latest
     container: 
       image: docker.io/library/ubuntu:latest
