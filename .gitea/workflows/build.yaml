@@ -40,15 +40,15 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: 
-      image: docker.io/library/ubuntu:latest
-      options:
-        --privileged
-        --network=host
-      volumes:
-        - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
-        - /certs/client:/certs/client
-        - /artifacts/:/artifacts/
+    # container: 
+    #   image: docker.io/library/ubuntu:latest
+    #   options:
+    #     --privileged
+    #     --network=host
+    #   volumes:
+    #     - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
+    #     - /certs/client:/certs/client
+    #     - /artifacts/:/artifacts/
     env:
       KUBECONFIG: /root/.kube/config
       # DOCKER_HOST: tcp://gitearunner-service-docker.personal-16-1.svc.cluster.local:2376
