@@ -65,6 +65,11 @@ jobs:
           echo GITEA_RUNNER_NAME=${GITEA_RUNNER_NAME}
           echo GITEA_RUNNER_NAME_2=${GITEA_RUNNER_NAME_2}
 
+      - name: Dump environment context
+        env:
+          ENV_CONTENT: ${{ toJson(env) }}
+        run: echo "$ENV_CONTENT"
+
       - name: Debug hostnames
         run: |
           apt-get update
