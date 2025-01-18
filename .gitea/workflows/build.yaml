@@ -58,11 +58,11 @@ jobs:
     steps:
       - name: Debug hostnames
         run: |
-          host localhost
+          getent ahostsv4 localhost
           hostname -I
           ip a
-          host gitearunner-service-docker.personal-16-1.svc.cluster.local
-          host gitearunner-service-docker
+          getent ahostsv4 gitearunner-service-docker.personal-16-1.svc.cluster.local
+          getent ahostsv4 gitearunner-service-docker
 
       - name: Check Kubeconfig
         run: |
