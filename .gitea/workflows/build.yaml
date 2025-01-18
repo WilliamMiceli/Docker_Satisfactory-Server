@@ -127,7 +127,7 @@ jobs:
           docker buildx rm --force gitearunner_${{github.event.repository.name}}_job${{github.run_number}}-
 
   push:
-    needs: build
+    needs: [get-steam-app-version, build]
     runs-on: ubuntu-latest
     container: 
       image: docker.io/library/ubuntu:latest
