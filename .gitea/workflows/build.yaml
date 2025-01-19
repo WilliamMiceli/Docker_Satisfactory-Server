@@ -56,10 +56,6 @@ jobs:
           mkdir -p /secrets/
           echo "$KUBECONFIG_BUILDX" > /secrets/kubeconfig-buildx.yaml
 
-      - name: Check Secrets
-        run: |
-          ls -AhlR /abc123456/
-
       - name: Check Certs
         run: |
           ls -AhlR /certs/
