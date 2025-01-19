@@ -45,7 +45,7 @@ jobs:
       volumes:
         - /artifacts/:/artifacts/
         - /certs/client:/certs/client
-        - /secrets:/secrets
+        - /secrets/kubeconfig-buildx.yaml/:/secrets/kubeconfig-buildx.yaml
     env:
       KUBECONFIG: /secrets/kubeconfig-buildx.yaml
 
@@ -115,7 +115,7 @@ jobs:
           docker buildx create \
             --bootstrap \
             --driver kubernetes \
-            --name gitearunner_${{github.event.repository.name}}_run${{github.run_number}}_job${{github.job}} \
+            --name gitearunner_${{github.event.repository.name}}_Run-${{github.run_number}}_Job-${{github.job}} \
             --driver-opt namespace=personal-16-1,rootless=true
 
       - name: Check Dockerfile
@@ -128,7 +128,7 @@ jobs:
           pwd
           mkdir -p /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/
           docker buildx build \
-            --builder gitearunner_${{github.event.repository.name}}_run${{github.run_number}}_job${{github.job}} \
+            --builder gitearunner_${{github.event.repository.name}}_Run-${{github.run_number}}_Job-${{github.job}} \
             --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
@@ -141,7 +141,7 @@ jobs:
       - name: Remove Docker Builder Container
         if: always()
         run: |
-          docker buildx rm --force gitearunner_${{github.event.repository.name}}_run${{github.run_number}}_job${{github.job}}
+          docker buildx rm --force gitearunner_${{github.event.repository.name}}_Run-${{github.run_number}}_Job-${{github.job}}
 
   push:
     needs: [get-steam-app-version, build]
