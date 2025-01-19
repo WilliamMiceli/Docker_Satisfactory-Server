@@ -56,6 +56,10 @@ jobs:
         run: |
           ls -AhlR /secrets/
 
+      - name: Check Certs
+        run: |
+          ls -AhlR /certs/
+
       - name: Dump environment context
         env:
           ENV_CONTENT: ${{ toJson(env) }}
