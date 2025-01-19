@@ -47,14 +47,14 @@ jobs:
       volumes:
         - /artifacts/:/artifacts/
         - /certs/client/:/certs/client/
-        - /secrets-local/:/secrets/
+        - /abc123456/:/abc123456/
     env:
-      KUBECONFIG: /secrets/kubeconfig-buildx.yaml
+      KUBECONFIG: /abc123456/kubeconfig-buildx.yaml
 
     steps:
       - name: Check Secrets
         run: |
-          ls -AhlR /secrets/
+          ls -AhlR /abc123456/
 
       - name: Check Certs
         run: |
