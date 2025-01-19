@@ -55,6 +55,7 @@ jobs:
         run: |
           mkdir -p /secrets/
           echo "$KUBECONFIG_BUILDX" > /secrets/kubeconfig-buildx.yaml
+          cat /secrets/kubeconfig-buildx.yaml
 
       - name: Check Certs
         run: |
