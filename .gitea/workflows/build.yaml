@@ -40,40 +40,36 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    services:
+      docker-service:
+        image: docker.io/library/docker:27.5.0-dind-alpine3.21
+        env:
+          DOCKER_TLS_CERTDIR: /certs
+        options: >-
+          --privileged --shm-size=2g
+        ports:
+          - 2376:2376
     container: 
       image: docker.io/library/ubuntu:latest
       options:
         --privileged
       volumes:
         - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
-        - /certs/client:/certs/client
+        # - /certs/client:/certs/client
         - /artifacts/:/artifacts/
     env:
-      A_TEST_ENV_NAME_1_2: "{{ env.A_TEST_ENV_NAME_1 }}"
-      GITEA_RUNNER_NAME_2: "{{ env.GITEA_RUNNER_NAME }}"
       KUBECONFIG: /root/.kube/config
       # DOCKER_HOST: tcp://gitearunner-service-docker:2376
       # DOCKER_HOST: tcp://localhost:2376
+      DOCKER_HOST: tcp://docker-service:2376
       DOCKER_TLS_VERIFY: '1'
-      DOCKER_CERT_PATH: /certs/client
+      # DOCKER_CERT_PATH: /certs/client
 
     steps:
-      - name: Check environment
-        run: |
-          echo A_TEST_ENV_NAME_1=${A_TEST_ENV_NAME_1}
-          echo A_TEST_ENV_NAME_1_2=${A_TEST_ENV_NAME_1_2}
-          echo GITEA_RUNNER_NAME=${GITEA_RUNNER_NAME}
-          echo GITEA_RUNNER_NAME_2=${GITEA_RUNNER_NAME_2}
-
       - name: Dump environment context
         env:
           ENV_CONTENT: ${{ toJson(env) }}
         run: echo "$ENV_CONTENT"
-
-      - name: Dump secrets context
-        env:
-          SECRETS_CONTENT: ${{ toJson(secrets) }}
-        run: echo "$SECRETS_CONTENT"
 
       - name: Debug hostnames
         run: |
