@@ -46,13 +46,17 @@ jobs:
         --privileged
         --add-host ${{env.DIND_SERVICE_HOSTNAME}}:${{env.DIND_SERVICE_IP}}
       volumes:
-        - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
-        - /certs/client:/certs/client
         - /artifacts/:/artifacts/
+        - /certs/client:/certs/client
+        - /secrets:/secrets
     env:
-      KUBECONFIG: /root/.kube/config
+      KUBECONFIG: /secrets/kubeconfig-buildx.yaml
 
     steps:
+      - name: Check Secrets
+        run: |
+          ls -AhlR /secrets
+
       - name: Dump environment context
         env:
           ENV_CONTENT: ${{ toJson(env) }}
