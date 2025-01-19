@@ -40,47 +40,19 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    # services:
-    #   docker-service:
-    #     image: docker.io/library/docker:27.5.0-dind-alpine3.21
-    #     env:
-    #       DOCKER_TLS_CERTDIR: /certs
-    #     options: >-
-    #       --privileged
-    #       --hostname docker-service
-    #       --shm-size=2g
-    #     ports:
-    #       - 2375:2376
-    #     volumes:
-    #       - docker-certs:/certs
     container: 
       image: docker.io/library/ubuntu:latest
       options:
         --privileged
         --add-host ${{env.DIND_SERVICE_HOSTNAME}}:${{env.DIND_SERVICE_IP}}
       volumes:
-        - docker-certs:/certs
         - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
         - /certs/client:/certs/client
         - /artifacts/:/artifacts/
     env:
       KUBECONFIG: /root/.kube/config
-      # DOCKER_HOST: tcp://gitearunner-service-docker:2376
-      # DOCKER_HOST: tcp://localhost:2375
-      # DOCKER_HOST: tcp://docker-service:2376
-      DOCKER_TLS_VERIFY: '1'
-      DOCKER_CERT_PATH: /certs/client
 
     steps:
-      # - name: Sleep
-      #   run: |
-      #     sleep 60
-
-      - name: Check volumes
-        run: |
-          ls -Ahl /
-          ls -AhlR /certs
-
       - name: Dump environment context
         env:
           ENV_CONTENT: ${{ toJson(env) }}
@@ -185,9 +157,9 @@ jobs:
   #       - /certs/client:/certs/client
   #       - /artifacts/:/artifacts/
   #   env:
-  #     DOCKER_HOST: tcp://127.0.0.1:2376
-  #     DOCKER_TLS_VERIFY: '1'
-  #     DOCKER_CERT_PATH: /certs/client
+      # DOCKER_HOST: tcp://${{env.DIND_SERVICE_HOSTNAME}}:2376
+      # DOCKER_TLS_VERIFY: '1'
+      # DOCKER_CERT_PATH: /certs/client
 
   #   steps:
   #     - name: Check Artifacts
