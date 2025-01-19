@@ -47,11 +47,14 @@ jobs:
           DOCKER_TLS_CERTDIR: /certs
         options: >-
           --privileged --shm-size=2g
+        volumes:
+          - docker-certs:/certs
     container: 
       image: docker.io/library/ubuntu:latest
       options:
         --privileged
       volumes:
+        - docker-certs:/certs
         - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
         # - /certs/client:/certs/client
         - /artifacts/:/artifacts/
