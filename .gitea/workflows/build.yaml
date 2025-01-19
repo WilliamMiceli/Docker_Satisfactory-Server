@@ -47,8 +47,6 @@ jobs:
           DOCKER_TLS_CERTDIR: /certs
         options: >-
           --privileged --shm-size=2g
-        ports:
-          - 2376:2376
     container: 
       image: docker.io/library/ubuntu:latest
       options:
