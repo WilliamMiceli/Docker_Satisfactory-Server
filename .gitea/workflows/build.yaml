@@ -72,9 +72,9 @@ jobs:
       DOCKER_CERT_PATH: /certs/client
 
     steps:
-      - name: Sleep
-        run: |
-          sleep 60
+      # - name: Sleep
+      #   run: |
+      #     sleep 60
 
       - name: Check volumes
         run: |
@@ -94,7 +94,7 @@ jobs:
           ip a
           host gitearunner-service-docker.personal-16-1.svc.cluster.local
           host gitearunner-service-docker
-          host docker-service
+          host ${{env.DOCKER_HOST}}
 
           netstat -ntlp
 
