@@ -57,7 +57,7 @@ jobs:
       image: docker.io/library/ubuntu:latest
       options:
         --privileged
-        --add-host ${{env.DIND_HOSTNAME}}:127.0.0.1
+        --add-host ${{env.DIND_SERVICE_HOSTNAME}}:${{env.DIND_SERVICE_IP}}
       volumes:
         - docker-certs:/certs
         - /secrets/kubeconfig-buildx.yaml:/root/.kube/config
