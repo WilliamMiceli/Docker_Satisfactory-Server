@@ -42,9 +42,6 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: docker.io/library/ubuntu:latest
-      options:
-        --privileged
-        --add-host ${{env.DIND_SERVICE_HOSTNAME}}:${{env.DIND_SERVICE_IP}}
       volumes:
         - /artifacts/:/artifacts/
         - /certs/client:/certs/client
@@ -100,10 +97,6 @@ jobs:
           apt-get update
           apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-      - name: Check Connection to Docker Engine
-        run: |
-          docker info
-
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -122,7 +115,7 @@ jobs:
           docker buildx create \
             --bootstrap \
             --driver kubernetes \
-            --name gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
+            --name gitearunner_${{github.event.repository.name}}_run${{github.run_number}}_job${{github.job}} \
             --driver-opt namespace=personal-16-1,rootless=true
 
       - name: Check Dockerfile
@@ -133,99 +126,100 @@ jobs:
       - name: Build Docker Image
         run: |
           pwd
-          mkdir -p /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/
+          mkdir -p /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/
           docker buildx build \
-            --builder gitearunner_${{github.event.repository.name}}_job${{github.run_number}}- \
+            --builder gitearunner_${{github.event.repository.name}}_run${{github.run_number}}_job${{github.job}} \
             --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
             --build-arg CI_BUILD_STARTED=${{github.event.commits.timestamp}} \
             --build-arg COMMIT_SHA=${{github.sha}} \
             --output type=tar,dest=- \
-            . > /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
+            . > /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar
           ls -AhlR /artifacts/
 
       - name: Remove Docker Builder Container
         if: always()
         run: |
-          docker buildx rm --force gitearunner_${{github.event.repository.name}}_job${{github.run_number}}-
+          docker buildx rm --force gitearunner_${{github.event.repository.name}}_run${{github.run_number}}_job${{github.job}}
 
-  # push:
-  #   needs: [get-steam-app-version, build]
-  #   runs-on: ubuntu-latest
-  #   container: 
-  #     image: docker.io/library/ubuntu:latest
-  #     options:
-  #       --privileged
-  #     volumes:
-  #       - /certs/client:/certs/client
-  #       - /artifacts/:/artifacts/
-  #   env:
-      # DOCKER_HOST: tcp://${{env.DIND_SERVICE_HOSTNAME}}:2376
-      # DOCKER_TLS_VERIFY: '1'
-      # DOCKER_CERT_PATH: /certs/client
+  push:
+    needs: [get-steam-app-version, build]
+    runs-on: ubuntu-latest
+    container: 
+      image: docker.io/library/ubuntu:latest
+      options:
+        --privileged
+        --add-host ${{env.DIND_SERVICE_HOSTNAME}}:${{env.DIND_SERVICE_IP}}
+      volumes:
+        - /certs/client:/certs/client
+        - /artifacts/:/artifacts/
+    env:
+      DOCKER_HOST: tcp://${{env.DIND_SERVICE_HOSTNAME}}:2376
+      DOCKER_TLS_VERIFY: '1'
+      DOCKER_CERT_PATH: /certs/client
 
-  #   steps:
-  #     - name: Check Artifacts
-  #       run: |
-  #         ls -AhlR /artifacts/
+    steps:
+      - name: Check Artifacts
+        run: |
+          ls -AhlR /artifacts/
 
-  #     - name: Install Required Build Tools
-  #       run: |
-  #         apt-get update
+      - name: Install Required Build Tools
+        run: |
+          apt-get update
 
-  #         # Install Git
-  #         apt-get install git -y
+          # Install Git
+          apt-get install git -y
 
-  #         # Install Docker (https://docs.docker.com/engine/install/ubuntu/)
-  #         apt-get install ca-certificates curl -y
-  #         install -m 0755 -d /etc/apt/keyrings
-  #         curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-  #         chmod a+r /etc/apt/keyrings/docker.asc
+          # Install Docker (https://docs.docker.com/engine/install/ubuntu/)
+          apt-get install ca-certificates curl -y
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          chmod a+r /etc/apt/keyrings/docker.asc
 
-  #         echo \
-  #           "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  #           $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  #           tee /etc/apt/sources.list.d/docker.list > /dev/null
-  #         apt-get update
-  #         apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get update
+          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-  #     - name: Check Connection to Docker Engine
-  #       run: |
-  #         docker info
+      - name: Check Connection to Docker Engine
+        run: |
+          docker info
 
-  #     - name: Load Image Into Docker Engine
-  #       run: |
-  #         docker image load --input /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
-  #         docker image ls
+      - name: Load Image Into Docker Engine
+        run: |
+          docker image load --input /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar
+          docker image ls
 
-  #     - name: CLI Login to Gitea Registry
-  #       run: |
-  #         echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_GITEA_USERNAME}} --password-stdin
+      - name: CLI Login to Gitea Registry
+        run: |
+          echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_GITEA_USERNAME}} --password-stdin
 
-  #     - name: Tag and Push to Gitea Registry
-  #       run: |
-  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:latest
-  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:app_build_id-${APP_BUILD_ID}
-  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:ci_build-${{gitea.run_number}}
-  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${{gitea.sha}}
-  #         docker push --all-tags gitea.williammiceli.systems/william/docker_satisfactory-server
-  #       env:
-  #         APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:latest
+          docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:ci_build-${{gitea.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${{gitea.sha}}
+          docker push --all-tags gitea.williammiceli.systems/william/docker_satisfactory-server
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
-  #     - name: CLI Login to Docker Hub Registry
-  #       run: |
-  #         echo ${{secrets.CI_DOCKER_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_DOCKER_USERNAME}} --password-stdin
+      - name: CLI Login to Docker Hub Registry
+        run: |
+          echo ${{secrets.CI_DOCKER_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_DOCKER_USERNAME}} --password-stdin
 
-  #     - name: Tag and Push to Docker Hub
-  #       run: |
-  #         docker tag image:latest williammiceli/satisfactory-server:latest
-  #         docker tag image:latest williammiceli/satisfactory-server:app_build_id-${APP_BUILD_ID}
-  #         docker tag image:latest williammiceli/satisfactory-server:ci_build-${{gitea.run_number}}
-  #         docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{gitea.sha}}
-  #         docker push --all-tags williammiceli/satisfactory-server
-  #       env:
-  #         APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+      - name: Tag and Push to Docker Hub
+        run: |
+          docker tag image:latest williammiceli/satisfactory-server:latest
+          docker tag image:latest williammiceli/satisfactory-server:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest williammiceli/satisfactory-server:ci_build-${{gitea.run_number}}
+          docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{gitea.sha}}
+          docker push --all-tags williammiceli/satisfactory-server
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
 
   # push2:
@@ -241,7 +235,7 @@ jobs:
   #     - name: Load Image Into Docker Engine
   #       if: always()
   #       run: |
-  #         docker image load --input /artifacts/${{github.event.repository.name}}_job${{github.run_number}}/image.tar
+  #         docker image load --input /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar
   #         docker image ls
 
   #     - name: CLI Login to Gitea Registry
