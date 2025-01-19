@@ -47,13 +47,12 @@ jobs:
         - /certs/client/:/certs/client/
         - /secrets-local/:/secrets/
     env:
-      KUBECONFIG: /secrets-local/kubeconfig-buildx.yaml
+      KUBECONFIG: /secrets/kubeconfig-buildx.yaml
 
     steps:
       - name: Check Secrets
         run: |
           ls -AhlR /secrets/
-          ls -AhlR /secrets-local/
 
       - name: Dump environment context
         env:
