@@ -47,11 +47,15 @@ jobs:
       volumes:
         - /artifacts/:/artifacts/
         - /certs/client/:/certs/client/
-        - /abc123456/:/abc123456/
     env:
-      KUBECONFIG: /abc123456/kubeconfig-buildx.yaml
+      KUBECONFIG: /secrets/kubeconfig-buildx.yaml
 
     steps:
+      - name: Import Kubeconfig
+        run: |
+          mkdir -p /secrets/
+          echo "$KUBECONFIG_BUILDX" > /secrets/kubeconfig-buildx.yaml
+
       - name: Check Secrets
         run: |
           ls -AhlR /abc123456/
