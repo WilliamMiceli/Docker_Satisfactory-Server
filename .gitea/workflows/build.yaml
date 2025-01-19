@@ -47,6 +47,8 @@ jobs:
           DOCKER_TLS_CERTDIR: /certs
         options: >-
           --privileged --shm-size=2g
+        ports:
+          - 2375:2376
         volumes:
           - docker-certs:/certs
     container: 
@@ -61,12 +63,16 @@ jobs:
     env:
       KUBECONFIG: /root/.kube/config
       # DOCKER_HOST: tcp://gitearunner-service-docker:2376
-      # DOCKER_HOST: tcp://localhost:2376
-      DOCKER_HOST: tcp://docker-service:2376
+      DOCKER_HOST: tcp://localhost:2375
+      # DOCKER_HOST: tcp://docker-service:2376
       DOCKER_TLS_VERIFY: '1'
       DOCKER_CERT_PATH: /certs/client
 
     steps:
+      - name: Sleep
+        run: |
+          sleep 60
+
       - name: Check volumes
         run: |
           ls -Ahl /
