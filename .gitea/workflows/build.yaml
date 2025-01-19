@@ -90,11 +90,12 @@ jobs:
         run: |
           apt-get update
           apt-get install dnsutils iproute2 net-tools -y --no-install-recommends
+          cat /etc/hosts
           hostname -I
           ip a
           host gitearunner-service-docker.personal-16-1.svc.cluster.local
           host gitearunner-service-docker
-          host ${{env.DOCKER_HOST}}
+          host ${{env.DIND_HOSTNAME}}
 
           netstat -ntlp
 
