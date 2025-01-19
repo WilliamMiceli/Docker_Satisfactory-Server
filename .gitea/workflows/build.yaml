@@ -45,7 +45,7 @@ jobs:
       volumes:
         - /artifacts/:/artifacts/
         - /certs/client:/certs/client
-        - /secrets/kubeconfig-buildx.yaml:/secrets/kubeconfig-buildx.yaml
+        - /secrets:/secrets
     env:
       KUBECONFIG: /secrets/kubeconfig-buildx.yaml
 
