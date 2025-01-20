@@ -47,8 +47,37 @@ jobs:
       volumes:
         - /artifacts/:/artifacts/
         - /certs/client/:/certs/client/
+    env:
+      KUBECONFIG: /secrets/kubeconfig-buildx.yaml
 
     steps:
+      - name: Check Certs
+        run: |
+          ls -AhlR /certs/
+
+      - name: Dump environment context
+        env:
+          ENV_CONTENT: ${{ toJson(env) }}
+        run: echo "$ENV_CONTENT"
+
+      - name: Debug hostnames
+        run: |
+          apt-get update
+          apt-get install dnsutils iproute2 net-tools -y --no-install-recommends
+          cat /etc/hosts
+          hostname -I
+          ip a
+          host gitearunner-service-docker.personal-16-1.svc.cluster.local
+          host gitearunner-service-docker
+
+          netstat -ntlp
+
+      - name: Check Kubeconfig
+        run: |
+          echo "HOME=$HOME"
+          ls -AhlR /$HOME
+          echo "done"
+
       - name: Install Required Build Tools
         run: |
           apt-get update
@@ -69,6 +98,11 @@ jobs:
           apt-get update
           apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - name: Checkout Code
         run: |
           pwd
@@ -77,11 +111,25 @@ jobs:
           git checkout ${{github.sha}} --recurse-submodules
           pwd
 
+      - name: Setup Docker Builder Container
+        run: |
+          docker buildx create \
+            --bootstrap \
+            --driver kubernetes \
+            --name gitearunner_${{github.event.repository.name}}_Run-${{github.run_number}}_Job-${{github.job}} \
+            --driver-opt namespace=personal-16-1,rootless=true
+
+      - name: Check Dockerfile
+        run: |
+          pwd
+          ls -AhlR ./
+
       - name: Build Docker Image
         run: |
           pwd
           mkdir -p /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/
-          docker build \
+          docker buildx build \
+            --builder gitearunner_${{github.event.repository.name}}_Run-${{github.run_number}}_Job-${{github.job}} \
             --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
@@ -90,6 +138,11 @@ jobs:
             --output type=tar,dest=- \
             . > /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar
           ls -AhlR /artifacts/
+
+      - name: Remove Docker Builder Container
+        if: always()
+        run: |
+          docker buildx rm --force gitearunner_${{github.event.repository.name}}_Run-${{github.run_number}}_Job-${{github.job}}
 
   push:
     needs: [get-steam-app-version, build]
@@ -111,6 +164,26 @@ jobs:
       - name: Check Artifacts
         run: |
           ls -AhlR /artifacts/
+
+      - name: Install Required Build Tools
+        run: |
+          apt-get update
+
+          # Install Git
+          apt-get install git -y
+
+          # Install Docker (https://docs.docker.com/engine/install/ubuntu/)
+          apt-get install ca-certificates curl -y
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          chmod a+r /etc/apt/keyrings/docker.asc
+
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get update
+          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
       - name: Check Connection to Docker Engine
         run: |
@@ -148,3 +221,52 @@ jobs:
           docker push --all-tags williammiceli/satisfactory-server
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+
+  # push2:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Check Artifacts
+  #       if: always()
+  #       run: |
+  #         ls -AhlR /artifacts/
+
+  #     - name: Load Image Into Docker Engine
+  #       if: always()
+  #       run: |
+  #         docker image load --input /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar
+  #         docker image ls
+
+  #     - name: CLI Login to Gitea Registry
+  #       if: always()
+  #       run: |
+  #         echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_GITEA_USERNAME}} --password-stdin
+
+  #     - name: Tag and Push to Gitea Registry
+  #       if: always()
+  #       run: |
+  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:latest
+  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:app_build_id-${APP_BUILD_ID}
+  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:ci_build-${{gitea.run_number}}
+  #         docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${{gitea.sha}}
+  #         docker push --all-tags gitea.williammiceli.systems/william/docker_satisfactory-server
+  #       env:
+  #         APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+  #     - name: CLI Login to Docker Hub Registry
+  #       if: always()
+  #       run: |
+  #         echo ${{secrets.CI_DOCKER_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_DOCKER_USERNAME}} --password-stdin
+
+  #     - name: Tag and Push to Docker Hub
+  #       if: always()
+  #       run: |
+  #         docker tag image:latest williammiceli/satisfactory-server:latest
+  #         docker tag image:latest williammiceli/satisfactory-server:app_build_id-${APP_BUILD_ID}
+  #         docker tag image:latest williammiceli/satisfactory-server:ci_build-${{gitea.run_number}}
+  #         docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{gitea.sha}}
+  #         docker push --all-tags williammiceli/satisfactory-server
+  #       env:
+  #         APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
