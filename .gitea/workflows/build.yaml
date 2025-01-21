@@ -160,20 +160,6 @@ jobs:
           docker image import /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar image:latest
           docker image ls
 
-      - name: CLI Login to Gitea Registry
-        run: |
-          echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_GITEA_USERNAME}} --password-stdin
-
-      - name: Tag and Push to Gitea Registry
-        run: |
-          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:latest
-          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:app_build_id-${APP_BUILD_ID}
-          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:ci_build-${{gitea.run_number}}
-          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:commit_sha-${{gitea.sha}}
-          docker push --all-tags gitea.williammiceli.systems/william/satisfactory-server
-        env:
-          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
-
       - name: CLI Login to Docker Hub Registry
         run: |
           echo ${{secrets.CI_DOCKER_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_DOCKER_USERNAME}} --password-stdin
@@ -185,5 +171,19 @@ jobs:
           docker tag image:latest williammiceli/satisfactory-server:ci_build-${{gitea.run_number}}
           docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{gitea.sha}}
           docker push --all-tags williammiceli/satisfactory-server
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: CLI Login to Gitea Registry
+        run: |
+          echo ${{secrets.CI_GITEA_TOKEN}} | docker login gitea.williammiceli.systems --username ${{secrets.CI_GITEA_USERNAME}} --password-stdin
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:latest
+          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:ci_build-${{gitea.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:commit_sha-${{gitea.sha}}
+          docker push --all-tags gitea.williammiceli.systems/william/satisfactory-server
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
