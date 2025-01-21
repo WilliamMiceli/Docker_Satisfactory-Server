@@ -166,11 +166,11 @@ jobs:
 
       - name: Tag and Push to Gitea Registry
         run: |
-          docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:latest
-          docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:app_build_id-${APP_BUILD_ID}
-          docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:ci_build-${{gitea.run_number}}
-          docker tag image:latest gitea.williammiceli.systems/william/docker_satisfactory-server:commit_sha-${{gitea.sha}}
-          docker push --all-tags gitea.williammiceli.systems/william/docker_satisfactory-server
+          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:latest
+          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:ci_build-${{gitea.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:commit_sha-${{gitea.sha}}
+          docker push --all-tags gitea.williammiceli.systems/william/satisfactory-server
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
