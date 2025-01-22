@@ -51,6 +51,7 @@ jobs:
       DOCKER_HOST: tcp://${{env.DIND_SERVICE_HOSTNAME}}:2376
       DOCKER_TLS_VERIFY: '1'
       DOCKER_CERT_PATH: /certs/client/
+      CONTAINER_NAME: satisfactory-server
 
     steps:
       - name: Install Required Build Tools
@@ -88,8 +89,8 @@ jobs:
 
       - name: Clean Old Images
         run: |
-          docker rmi --force $(docker images --quiet '${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
-          docker rmi --force $(docker images --quiet '${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}' | uniq)
+          docker rmi --force $(docker images --quiet '${{secrets.CI_DOCKER_USERNAME}}/${CONTAINER_NAME}' | uniq)
+          docker rmi --force $(docker images --quiet '${{GITHUB.event.repository.owner.html_url:8}}/${CONTAINER_NAME}' | uniq)
 
       - name: Create Docker OCI Builder
         run: |
@@ -132,6 +133,7 @@ jobs:
       DOCKER_HOST: tcp://${{env.DIND_SERVICE_HOSTNAME}}:2376
       DOCKER_TLS_VERIFY: '1'
       DOCKER_CERT_PATH: /certs/client/
+      CONTAINER_NAME: satisfactory-server
 
     steps:
       - name: Dump environment context
@@ -185,7 +187,7 @@ jobs:
         run: |
           echo "CI_DOCKER_USERNAME: ${{secrets.CI_DOCKER_USERNAME}}"
           echo "Repo Owner: ${{GITHUB.event.repository.owner.html_url:8}}"
-          echo "CONTAINER_NAME: ${{vars.CONTAINER_NAME}}"
+          echo "CONTAINER_NAME: ${CONTAINER_NAME}"
 
       - name: CLI Login to Docker Hub Registry
         run: |
@@ -193,12 +195,12 @@ jobs:
 
       - name: Tag and Push to Docker Hub
         run: |
-          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:latest
-          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
-          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
-          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha:0:8}}
+          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${CONTAINER_NAME}:latest
+          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${CONTAINER_NAME}:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${CONTAINER_NAME}:ci_build-${{GITHUB.run_number}}
+          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${CONTAINER_NAME}:commit_sha-${{GITHUB.sha:0:8}}
           docker image ls
-          docker push --all-tags ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}
+          docker push --all-tags ${{secrets.CI_DOCKER_USERNAME}}/${CONTAINER_NAME}
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
@@ -208,17 +210,17 @@ jobs:
 
       - name: Tag and Push to Gitea Registry
         run: |
-          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:latest
-          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
-          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
-          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha:0:8}}
+          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${CONTAINER_NAME}:latest
+          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${CONTAINER_NAME}:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${CONTAINER_NAME}:ci_build-${{GITHUB.run_number}}
+          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${CONTAINER_NAME}:commit_sha-${{GITHUB.sha:0:8}}
           docker image ls
-          docker push --all-tags ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}
+          docker push --all-tags ${{GITHUB.event.repository.owner.html_url:8}}/${CONTAINER_NAME}
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
       - name: Clean Old Images
         if: always()
         run: |
-          docker rmi --force $(docker images --quiet '${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
-          docker rmi --force $(docker images --quiet '${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}' | uniq)
+          docker rmi --force $(docker images --quiet '${{secrets.CI_DOCKER_USERNAME}}/${CONTAINER_NAME}' | uniq)
+          docker rmi --force $(docker images --quiet '${{GITHUB.event.repository.owner.html_url:8}}/${CONTAINER_NAME}' | uniq)
