@@ -194,6 +194,8 @@ jobs:
       - name: DEBUG3
         run: |
           echo "CONTAINER_NAME: ${CONTAINER_NAME}"
+          echo "CONTAINER_NAME: ${CONTAINER_NAME:0:4}"
+          echo "CONTAINER_NAME: ${CONTAINER_NAME:4}"
 
       - name: CLI Login to Docker Hub Registry
         run: |
