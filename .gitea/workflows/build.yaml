@@ -34,9 +34,8 @@ jobs:
               gsub(/[^0-9]/, "", $0); print; exit; \
           }')
           export GITEA_OUTPUT="${GITEA_OUTPUT:+$GITEA_OUTPUT:}APP_BUILD_ID=$APP_BUILD_ID"
+          echo "APP_BUILD_ID=$APP_BUILD_ID"
           echo "APP_BUILD_ID=$APP_BUILD_ID" >> "$GITHUB_OUTPUT"
-          echo "GITEA_OUTPUT=$GITEA_OUTPUT"
-          echo "GITHUB_OUTPUT=$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
@@ -77,41 +76,45 @@ jobs:
       - name: Checkout Code
         run: |
           pwd
-          git clone ${{github.server_url}}/${{github.repository}}.git ./
+          git clone ${{GITHUB.server_url}}/${{GITHUB.repository}}.git ./
           pwd
-          git checkout ${{github.sha}} --recurse-submodules
+          git checkout ${{GITHUB.sha}} --recurse-submodules
           pwd
 
       - name: Dump GitHub context
         env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
+          GITHUB_CONTEXT: ${{ toJson(GITHUB) }}
         run: echo "$GITHUB_CONTEXT"
+
+      - name: Clean Old Images
+        run: |
+          docker rmi --force $(docker images --quiet 'williammiceli/satisfactory-server')
 
       - name: Create Docker OCI Builder
         run: |
           docker context create buildx-build
-          docker buildx create --name ${{github.event.repository.name}}_run${{github.run_number}} --driver docker-container --use --bootstrap buildx-build
-          docker buildx inspect ${{github.event.repository.name}}_run${{github.run_number}} --bootstrap
+          docker buildx create --name ${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}} --driver docker-container --use --bootstrap buildx-build
+          docker buildx inspect ${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}} --bootstrap
 
       - name: Build Docker Image
         run: |
           pwd
-          mkdir -p /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/
+          mkdir -p /artifacts/${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}}/
           docker buildx build \
-            --builder ${{github.event.repository.name}}_run${{github.run_number}} \
+            --builder ${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}} \
             --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
-            --build-arg CI_BUILD_STARTED=${{github.event.commits.timestamp}} \
-            --build-arg COMMIT_SHA=${{github.sha}} \
+            --build-arg CI_BUILD_STARTED=${{GITHUB.event.commits.timestamp}} \
+            --build-arg COMMIT_SHA=${{GITHUB.sha}} \
             --output type=oci,dest=- \
-            . > /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar
+            . > /artifacts/${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}}/image.tar
           ls -AhlR /artifacts/
 
       - name: Remove Docker OCI Builder
         if: always()
         run: |
-          docker buildx rm ${{github.event.repository.name}}_run${{github.run_number}}
+          docker buildx rm ${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}}
 
   push:
     needs: [get-steam-app-version, build]
@@ -174,7 +177,7 @@ jobs:
 
       - name: Load Image Into Docker Engine
         run: |
-          docker image import /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar image:latest
+          docker image import /artifacts/${{GITHUB.event.repository.name}}_Run-${{GITHUB.run_number}}/image.tar image:latest
           docker image ls
 
       - name: CLI Login to Docker Hub Registry
@@ -183,11 +186,12 @@ jobs:
 
       - name: Tag and Push to Docker Hub
         run: |
-          docker tag image:latest williammiceli/satisfactory-server:latest
-          docker tag image:latest williammiceli/satisfactory-server:app_build_id-${APP_BUILD_ID}
-          docker tag image:latest williammiceli/satisfactory-server:ci_build-${{gitea.run_number}}
-          docker tag image:latest williammiceli/satisfactory-server:commit_sha-${{gitea.sha}}
-          docker push --all-tags williammiceli/satisfactory-server
+          docker tag image:latest docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:latest
+          docker tag image:latest docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
+          docker tag image:latest docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha:0:8}}
+          docker image ls
+          docker push --all-tags docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
@@ -197,10 +201,11 @@ jobs:
 
       - name: Tag and Push to Gitea Registry
         run: |
-          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:latest
-          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:app_build_id-${APP_BUILD_ID}
-          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:ci_build-${{gitea.run_number}}
-          docker tag image:latest gitea.williammiceli.systems/william/satisfactory-server:commit_sha-${{gitea.sha}}
-          docker push --all-tags gitea.williammiceli.systems/william/satisfactory-server
+          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:latest
+          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
+          docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha:0:8}}
+          docker image ls
+          docker push --all-tags ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
