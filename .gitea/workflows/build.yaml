@@ -88,7 +88,8 @@ jobs:
 
       - name: Clean Old Images
         run: |
-          docker rmi --force $(docker images --quiet 'williammiceli/satisfactory-server')
+          docker rmi --force $(docker images --quiet '${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
+          docker rmi --force $(docker images --quiet '${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}' | uniq)
 
       - name: Create Docker OCI Builder
         run: |
@@ -186,12 +187,12 @@ jobs:
 
       - name: Tag and Push to Docker Hub
         run: |
-          docker tag image:latest docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:latest
-          docker tag image:latest docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
-          docker tag image:latest docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
-          docker tag image:latest docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha:0:8}}
+          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:latest
+          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
+          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
+          docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha:0:8}}
           docker image ls
-          docker push --all-tags docker.io/${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}
+          docker push --all-tags ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
@@ -209,3 +210,8 @@ jobs:
           docker push --all-tags ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Clean Old Images
+        run: |
+          docker rmi --force $(docker images --quiet '${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
+          docker rmi --force $(docker images --quiet '${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}' | uniq)
