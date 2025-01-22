@@ -89,7 +89,8 @@ jobs:
 
       - name: Create Docker OCI Builder
         run: |
-          docker buildx create --name ${{github.event.repository.name}}_run${{github.run_number}} --driver docker-container --use --bootstrap
+          docker context create buildx-build
+          docker buildx create --name ${{github.event.repository.name}}_run${{github.run_number}} --driver docker-container --use --bootstrap buildx-build
           docker buildx inspect ${{github.event.repository.name}}_run${{github.run_number}} --bootstrap
 
       - name: Build Docker Image
