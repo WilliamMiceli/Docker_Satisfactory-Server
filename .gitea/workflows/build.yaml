@@ -82,11 +82,22 @@ jobs:
           git checkout ${{github.sha}} --recurse-submodules
           pwd
 
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Create Docker OCI Builder
+        run: |
+          docker buildx create --name ${{github.event.repository.name}}_run${{github.run_number}} --driver docker-container --use --bootstrap
+          docker buildx inspect ${{github.event.repository.name}}_run${{github.run_number}} --bootstrap
+
       - name: Build Docker Image
         run: |
           pwd
           mkdir -p /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/
-          docker build \
+          docker buildx build \
+            --builder ${{github.event.repository.name}}_run${{github.run_number}} \
             --platform=linux/amd64 \
             --tag image:latest \
             --file Dockerfile \
@@ -95,6 +106,11 @@ jobs:
             --output type=oci,dest=- \
             . > /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar
           ls -AhlR /artifacts/
+
+      - name: Remove Docker OCI Builder
+        if: always()
+        run: |
+          docker buildx rm ${{github.event.repository.name}}_run${{github.run_number}}
 
   push:
     needs: [get-steam-app-version, build]
