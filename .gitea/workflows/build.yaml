@@ -187,6 +187,8 @@ jobs:
 
       - name: Tag and Push to Docker Hub
         run: |
+          echo "CI_DOCKER_USERNAME: ${{secrets.CI_DOCKER_USERNAME}}"
+          echo "CONTAINER_NAME: ${{vars.CONTAINER_NAME}}"
           docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:latest
           docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
           docker tag image:latest ${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
@@ -202,6 +204,8 @@ jobs:
 
       - name: Tag and Push to Gitea Registry
         run: |
+          echo "Repo Owner: ${{GITHUB.event.repository.owner.html_url:8}}"
+          echo "CONTAINER_NAME: ${{vars.CONTAINER_NAME}}"
           docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:latest
           docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
           docker tag image:latest ${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
@@ -212,6 +216,7 @@ jobs:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
       - name: Clean Old Images
+        if: always()
         run: |
           docker rmi --force $(docker images --quiet '${{secrets.CI_DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}' | uniq)
           docker rmi --force $(docker images --quiet '${{GITHUB.event.repository.owner.html_url:8}}/${{vars.CONTAINER_NAME}}' | uniq)
