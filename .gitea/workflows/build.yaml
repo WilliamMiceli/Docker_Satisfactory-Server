@@ -92,7 +92,7 @@ jobs:
             --file Dockerfile \
             --build-arg CI_BUILD_STARTED=${{github.event.commits.timestamp}} \
             --build-arg COMMIT_SHA=${{github.sha}} \
-            --output type=tar,dest=- \
+            --output type=oci,dest=- \
             . > /artifacts/${{github.event.repository.name}}_run${{github.run_number}}/image.tar
           ls -AhlR /artifacts/
 
