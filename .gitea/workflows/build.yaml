@@ -206,20 +206,152 @@ jobs:
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
-      - name: CLI Login to Docker Hub Registry
+      - name: Tag and Push to Gitea Registry
         run: |
-          echo ${{secrets.CI_DOCKER_TOKEN}} | docker login docker.io --username ${{vars.DOCKER_USERNAME}} --password-stdin
-
-      - name: Tag and Push to Docker Hub
-        run: |
-          docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:latest
-          docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
-          docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
-          docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
           docker image ls
-          docker push --all-tags ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
         env:
           APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      - name: Tag and Push to Gitea Registry
+        run: |
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):latest
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):app_build_id-${APP_BUILD_ID}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):ci_build-${{GITHUB.run_number}}
+          docker tag image:latest gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}'):commit_sha-${{GITHUB.sha}}
+          docker image ls
+          docker push --all-tags gitea.williammiceli.systems/$(echo "${{vars.PACKAGE_OWNER_USERNAME}}/${{vars.CONTAINER_NAME}}" | awk '{print tolower($0)}')
+        env:
+          APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
+
+      # - name: CLI Login to Docker Hub Registry
+      #   run: |
+      #     echo ${{secrets.CI_DOCKER_TOKEN}} | docker login docker.io --username ${{vars.DOCKER_USERNAME}} --password-stdin
+
+      # - name: Tag and Push to Docker Hub
+      #   run: |
+      #     docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:latest
+      #     docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:app_build_id-${APP_BUILD_ID}
+      #     docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:ci_build-${{GITHUB.run_number}}
+      #     docker tag image:latest ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}:commit_sha-${{GITHUB.sha}}
+      #     docker image ls
+      #     docker push --all-tags ${{vars.DOCKER_USERNAME}}/${{vars.CONTAINER_NAME}}
+      #   env:
+      #     APP_BUILD_ID: ${{needs.get-steam-app-version.outputs.APP_BUILD_ID}}
 
       - name: Clean Old Images
         if: always()
